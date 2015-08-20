@@ -1,8 +1,8 @@
 Package: boxr
 Type: Package
 Title: Interface for the 'Box.com API'
-Version: 0.2.6
-Date: 2015-05-25
+Version: 0.2.9
+Date: 2015-08-19
 Authors@R: person("Brendan", "Rocks", email = "rocks.brendan@gmail.com",
     role = c("aut", "cre"))
 URL: https://github.com/brendan-R/boxr/
@@ -17,8 +17,8 @@ Imports: httr, httpuv, assertthat, stringr, dplyr, digest, jsonlite
 Suggests: testthat, knitr
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2015-05-26 00:19:46 UTC; br
+Packaged: 2015-08-20 00:08:20 UTC; br
 Author: Brendan Rocks [aut, cre]
 Maintainer: Brendan Rocks <rocks.brendan@gmail.com>
 Repository: CRAN
-Date/Publication: 2015-05-26 08:16:36
+Date/Publication: 2015-08-20 10:39:46

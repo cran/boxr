@@ -1,12 +1,43 @@
+# From https://box-content.readme.io/reference#upload-a-file
+# 
+# Box only supports file names of 255 characters or less. Names that will not be
+# supported are those that contain non-printable ascii, / or \, names with 
+# trailing spaces, and the special names "." and "..".
+box_filename <- function(x) {
+  x <- iconv(x, from = "", to = "ascii")
+  
+  if (is.na(x))
+    stop("box.com accepts only valid ASCII filenames. Filename conversion to",
+         " ASCII via iconv() failed. See ?Encoding")
+  
+  if (nchar(x) > 255)
+    stop("box.com accepts only filenames of 255 characters or less. Filename ",
+         "is ", nchar(x), " characters long.")
+  
+  if (grepl("^[[:space:]]+|^\\.{1,2}$", x))
+    stop('box.com file names may begin with a space, or be "." or "..".')
+  x
+}
+
+
+# Validate ids supplied
+box_id <- function(x) {
+  if (!is.null(x) && any(is.na(bit64::as.integer64(x)))) 
+    stop("box.com API ids must be (coercible to) 64-bit integers")
+  if (!is.null(x))
+    return(as.character(bit64::as.integer64(x)))
+}
+
+
 # Function to present different package startup messages, based on whether or
 # not it looks like the user has used boxr before
-boxrStartupMessage <- function(){
+boxrStartupMessage <- function() {
   new_user <- !file.exists("~/.boxr-oauth")
   
   packageStartupMessage(paste0(
     "Welcome to boxr ", utils::packageVersion("boxr"), "!\n",
     "Bug reports: https://github.com/brendan-R/boxr/issues",
-    if(new_user)
+    if (new_user)
       paste0(
         "\n\nSee vignette('boxr') for a short guide on connecting your box.com ",
         "account to R."
@@ -15,9 +46,10 @@ boxrStartupMessage <- function(){
   ))
 }
 
+
 # Short function to tidy up the variable which stores the creation of new remote
 # directories, putting the id at the same place on each
-dir_id_tidy <- function(x){
+dir_id_tidy <- function(x) {
   
   x <- as.character(x)
   
@@ -26,12 +58,11 @@ dir_id_tidy <- function(x){
   after  <- 
     paste("(id:", unlist(lapply(strsplit(x, "\\(id: "), function(x) x[2])))
   
-  spaces <- 
-    lapply(
-      nchar(before), 
-      function(y) 
-        paste(rep(" ", max(nchar(before)) - y), collapse = "")
-    )
+  spaces <- lapply(
+    nchar(before), 
+    function(y) 
+      paste(rep(" ", max(nchar(before)) - y), collapse = "")
+  )
   
   paste0(before, spaces, after)
 }
@@ -39,8 +70,8 @@ dir_id_tidy <- function(x){
 
 # A simple wrapper for box_auth, with defaul options suitable for running 
 # at startup
-boxAuthOnAttach <- function(){
-  if(Sys.getenv("BOX_AUTH_ON_ATTACH") == "TRUE")
+boxAuthOnAttach <- function() {
+  if (Sys.getenv("BOX_AUTH_ON_ATTACH") == "TRUE")
     try(
       box_auth(
         cache = Sys.getenv("BOX_TOKEN_CACHE"),
@@ -51,27 +82,27 @@ boxAuthOnAttach <- function(){
     )
 }
 
+
 # A version of cat which only works if the package options are set to verbose,
 # and pads out the message with spaces so that it fills/wipes the console.
 # It also appends \r to the start of each message, so that you can stick them in
 # a loop, for example
-catif <- function(...){
-  if(getOption("boxr.verbose")){
+catif <- function(...) {
+  if (getOption("boxr.verbose")) {
     txt <- paste(..., collapse = " ")
     width <- max(getOption("width"), nchar(txt))
     
-    cat(
-      paste0(
-        "\r", txt, 
-        paste(rep(" ", max(0, width - nchar(txt) - 1)), collapse = "")
-      )
-    )
+    cat(paste0(
+      "\r", txt, 
+      paste(rep(" ", max(0, width - nchar(txt) - 1)), collapse = "")
+    ))
   }
 }
 
+
 # A function to convert the datetime strings that the box api uses, to something
 # R can understand
-box_datetime <- function(x){
+box_datetime <- function(x) {
   # R has trouble figuring out the time format
   x <- as.character(x)
   # Split out the date/time part
@@ -86,20 +117,46 @@ box_datetime <- function(x){
   as.POSIXct(paste0(dt, tz), format = "%Y-%m-%dT%H:%M:%S%z")
 }
 
-checkAuth <- function(){
-  if(is.null(getOption("boxr.token")))
+
+checkAuth <- function() {
+  if (is.null(getOption("boxr.token")))
     stop("It doesn't look like you've set up authentication for boxr yet.\n",
          "See ?box_auth")
 }
 
+
 # Something for keeping dir strings a constant length for calls to cat
-trimDir <- function(x, limit = 25){
+trimDir <- function(x, limit = 25) {
   n <- nchar(x)
-  if(n > limit)
+  if (n > limit)
     return(paste0("...", substr(x, n - limit + 3, n)))
   
-  if(n < limit)
+  if (n < limit)
     return(paste0(paste(rep(" ", limit - n), collapse = ""), x)) else x
+}
+
+
+# Very basic stuff --------------------------------------------------------
+
+trunc_end <- function(x, max_char = 30, suffix = "...") {
+  ifelse(
+    nchar(x) > max_char,
+    paste0(
+      substr(x, 1, max_char - nchar(suffix)), suffix
+    ),
+    x
+  )
+}
+
+
+trunc_start <- function(x, max_char = 30, prefix = "...") {
+  ifelse(
+    nchar(x) > max_char,
+    paste0(
+      prefix, substr(x, nchar(x) - max_char + nchar(prefix) + 1, nchar(x))
+    ),
+    x
+  )
 }
 
 
@@ -113,8 +170,9 @@ skip_on_travis <- function() {
   testthat::skip("On Travis")
 }
 
+
 # A function to create a directory structure for testing
-create_test_dir <- function(){
+create_test_dir <- function() {
   # Clear out anything that might already be there
   unlink("test_dir", recursive = TRUE, force = TRUE)
   
@@ -137,8 +195,9 @@ create_test_dir <- function(){
   return()  
 }
 
+
 # A function to modify that directory structure
-modify_test_dir <- function(){
+modify_test_dir <- function() {
   # Delete a directory
   unlink("test_dir/dir_13", recursive = TRUE, force = TRUE)
   # Add a new directory
@@ -153,12 +212,14 @@ modify_test_dir <- function(){
   return()
 }
 
+
 # A function to clear out a box.com directory
-clear_box_dir <- function(dir_id){
+clear_box_dir <- function(dir_id) {
   dir.create("delete_me", showWarnings = FALSE)
   box_push(dir_id, "delete_me", delete = TRUE)
   unlink("delete_me", recursive = TRUE, force = TRUE)
 }
+
 
 modify_remote_dir <- function()
   suppressMessages({
@@ -171,7 +232,7 @@ modify_remote_dir <- function()
       writeLines("This text is NEW!", tf1)
       writeLines("This text is NEW!", tf2)
       
-      bls <- box_ls(0)
+      bls <- as.data.frame(box_ls(0))
       
       # Upload a new file
       # test_dir/newtestfile.txt
@@ -183,7 +244,7 @@ modify_remote_dir <- function()
       
       # Create a new dir, and put a new file in it
       # test_dir/another_dir/newtestfile.txt
-      new_dir <- box_dir_create("another_dir", 0)
+      new_dir <- boxDirCreate("another_dir", 0)
       box_ul(httr::content(new_dir)$id, tf2)
       
       # Delete a file
@@ -197,6 +258,10 @@ modify_remote_dir <- function()
 
 
 #' @keywords internal
-forRCMDCheck <- function(cran = "http://cran.r-project.org/"){
-  httpuv::encodeURI(cran)
+forRCMDCheck <- function(cran = "http://cran.r-project.org/") {
+  if (FALSE) {
+    httpuv::encodeURI(cran)
+    mime::guess_type(cran)
+    rio::import(cran)
+  }
 }

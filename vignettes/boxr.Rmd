@@ -41,10 +41,13 @@ If `box_auth()` worked successfully, you won't need to do any of this again, and
 Aside from file upload/download, boxr provides functions which mirror base R operations for local files.
 
 * `box_dl(file_id)` and `box_ul(file = 'path/to/file')` to download and upload files respectively
-* `box_load()` / `box_save()` for remote R workspaces
-* `box_read()` to read files straight into R (e.g. .csv files as data.frames)
-* `box_setwd()` / `box_getwd()` to get/set a default box folder
+* `box_load()`/`box_save()` for remote R workspaces
+* `box_read()` to read files straight into R (e.g. .csv or .xlsx files as `data.frames`)
+* `box_setwd()`/`box_getwd()` to get/set a default box folder
 * `box_source()` to read and execute remote code
+* `box_write()` to write R objects the remotely hosted files
+* `box_search()` to query files stored on box.com
+* `box_add_description()` add text descriptions to your files on box.com
 
 
 ### Directory wide Operations
@@ -61,7 +64,29 @@ These functions all have `overwrite` and `delete` parameters, which are set to `
 
 **Disclaimer:** box.com is no replacement for a VCS/remote-database, and familiar verbs are no guarantee of expected behavior! Do check the function documentation before jumping in.
 
-#### File/Folder IDs
+### Piping
+boxr's functions have been designed to be 'pipable'. Here's a little example:
+
+```r
+library(boxr)
+library(dplyr)
+library(magrittr)
+
+# 'nycflights13.json' is the same as nycflights13::flights, if you want to 
+# follow along at home
+
+box_auth()
+
+box_search("nycflights13.json") %>%                # Find a remote file
+  box_read() %>%                                   # Download it as a data.frame
+    group_by(origin, dest, month) %>%              #   Do some, er, cutting edge 
+    summarise(mu = mean(arr_delay), n = n()) %>%   #   analysis with dplyr!
+  box_write("delay_summary.xlsx") %>%              # Convert to .xlsx, upload
+  box_add_description("Check out these averages!") # Add a description to your file!
+  
+```
+
+### File/Folder IDs
 Are how box.com identifies things. You can find them in an item's URL:
 
 ![Finding file and folder ids](http://s3-us-west-2.amazonaws.com/brendan-misc/file_ids.png)
@@ -99,5 +124,3 @@ boxr is a realtively new package. If you find anything that looks like a bug whi
 
 The best way to do this is via a GitHub issue, at:
 [https://github.com/brendan-R/boxr/issues](https://github.com/brendan-R/boxr/issues)
-
-

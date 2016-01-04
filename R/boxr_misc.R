@@ -12,28 +12,20 @@
 #'   examining the contents of local directories.
 #'   
 #' @export
-box_ls <- function(dir_id = box_getwd()){
-  req <- 
-    httr::GET(
-      paste0(
-        "https://api.box.com/2.0/folders/",
-        dir_id, 
-        "/items?fields=modified_at,content_modified_at,name,id,type,sha1"
-      ),
-      httr::config(token = getOption("boxr.token"))
-    )
-    
-  d <- data.frame(dplyr::bind_rows(
-    lapply(
-      httr::content(req)$entries, 
-      function(x) data.frame(x, stringsAsFactors = FALSE)
-    )
-  ))
-
-  d$modified_at         <- box_datetime(d$modified_at)
-  d$content_modified_at <- box_datetime(d$content_modified_at)
+box_ls <- function(dir_id = box_getwd()) {
+  req <- httr::GET(
+    paste0(
+      "https://api.box.com/2.0/folders/",
+      box_id(dir_id), 
+      "/items?fields=modified_at,content_modified_at,name,id,type,sha1,size,",
+      "owned_by,path_collection,description"
+    ),
+    httr::config(token = getOption("boxr.token"))
+  )
   
-  return(d)
+  out <- httr::content(req)$entries
+  class(out) <- "boxr_object_list"
+  return(out)
 }
 
 
@@ -57,29 +49,27 @@ box_ls <- function(dir_id = box_getwd()){
 #'   and \code{\link{box_fetch}}/\code{\link{box_push}} for synchorizing them.
 #'  
 #' @export
-box_setwd <- function(dir_id){
-  req <- 
-    httr::GET(
-      paste0(
-        "https://api.box.com/2.0/folders/",
-        dir_id
-      ),
-      httr::config(token = getOption("boxr.token"))
-    )
+box_setwd <- function(dir_id) {
+  req <- httr::GET(
+    paste0(
+      "https://api.box.com/2.0/folders/",
+      box_id(dir_id)
+    ),
+    httr::config(token = getOption("boxr.token"))
+  )
   
   cont <- httr::content(req)
   
-  if(cont$type != "folder")
+  if (cont$type != "folder")
     stop("box.com API error message:\n", cont$message)
   
-  path_str <- 
-    do.call(
-      function(...) paste(..., sep="/"), 
-      lapply(
-        cont$path_collection$entries,
-        function(x) x$name
-      )
+  path_str <- do.call(
+    function(...) paste(..., sep="/"), 
+    lapply(
+      cont$path_collection$entries,
+      function(x) x$name
     )
+  )
   
   path_str <- paste0(path_str, "/", cont$name)
   
@@ -93,7 +83,7 @@ box_setwd <- function(dir_id){
   message(
     "box.com working directory changed to ",
     "'", cont$name, "'",
-    if(is.null(getOption("boxr.wd.path")) & cont$name == "All Files")
+    if (is.null(getOption("boxr.wd.path")) & cont$name == "All Files")
       " (top level box.com folder)",    
     "\n\n",
     "      id: ", cont$id, "\n",
@@ -101,9 +91,9 @@ box_setwd <- function(dir_id){
     "   owner: ", cont$owned_by$login, "\n",
     "contents: ", sum(item_types == "file"), " files, ",
     sum(item_types == "folder"), " folders\n",
-    if(cont$description != "")
+    if (cont$description != "")
       paste0("\ndescription: \n    ", cont$description, "\n\n"),
-    if(!is.null(cont$shared_link))
+    if (!is.null(cont$shared_link))
       paste0("shared link: ", cont$shared_link$url)
   )
 }
@@ -111,24 +101,12 @@ box_setwd <- function(dir_id){
 
 #' @rdname box_setwd
 #' @export
-box_getwd <- function(){
+box_getwd <- function() {
   
-  if(is.null(getOption("boxr.wd"))){
-    message("No box.com working directory set")
+  if (is.null(getOption("boxr.wd"))) {
+    stop("No box.com working directory set")
     return(invisible())
   }
-  
-  cont <- getOption("boxr.wd")
-  
-  message(
-    "'", cont$name, "'",
-    if(cont$id == "0")
-      " (top level box.com folder)",    
-    "\n\n",
-    if(getOption("boxr.wd")$id != "0")
-      paste0(" tree: ", getOption("boxr.wd.path"), "\n"),
-    "owner: ", cont$owned_by$login, "\n"
-  )
   
   return(getOption("boxr.wd")$id)
 }
@@ -163,16 +141,15 @@ box_getwd <- function(){
 #'   directory
 #' 
 #' @export
-boxr_options <- function(){
-  avail <- 
-    c(
-      "boxr.token",
-      "boxr.wd",
-      "boxr.wd.path",
-      "boxr.verbose",
-      "boxr.progress",
-      "boxr.interactive"
-    )
+boxr_options <- function() {
+  avail <- c(
+    "boxr.token",
+    "boxr.wd",
+    "boxr.wd.path",
+    "boxr.verbose",
+    "boxr.progress",
+    "boxr.interactive"
+  )
   
   o <- options()
   
@@ -191,7 +168,8 @@ boxr_options <- function(){
 #' @param parent_dir_id The box.com folder id of the folder you'd like your new
 #'   folder to be within.
 #' 
-#' @return The \code{\link{httr}} object returned by the api call
+#' @return An object of class 
+#'   \code{\link[=boxr_S3_classes]{boxr_folder_reference}}.
 #' 
 #' @author Brendan Rocks \email{rocks.brendan@@gmail.com}
 #' 
@@ -199,14 +177,22 @@ boxr_options <- function(){
 #'   folders/directories, \code{\link{box_ls}} to examine their conetents.
 #' 
 #' @export
-box_dir_create <- function(dir_name, parent_dir_id = box_getwd()){
+box_dir_create <- function(dir_name, parent_dir_id = box_getwd()) {
+  add_folder_ref_class(httr::content(
+    boxDirCreate(dir_name, box_id(parent_dir_id))
+  ))
+}
+
+#' @keywords internal
+boxDirCreate <- function(dir_name, parent_dir_id = box_getwd()) {
   httr::POST(
     "https://api.box.com/2.0/folders/",
     httr::config(token = getOption("boxr.token")),
     encode = "multipart",
     body = 
       paste0(
-        '{"name":"', dir_name, '", "parent": {"id": "', parent_dir_id, '"}}'
+        '{"name":"', dir_name, '", "parent": {"id": "', box_id(parent_dir_id),
+        '"}}'
       )
   )
 }

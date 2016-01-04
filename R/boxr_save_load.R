@@ -7,6 +7,7 @@
 #' 
 #' @aliases box_load
 #' 
+#' @inheritParams box_dl
 #' @param ... The objects to be saved. Quoted or unquoted. Passed to 
 #'   \code{\link{save}}.
 #' @param dir_id The box.com folder id where the objects will be stored as a
@@ -31,27 +32,29 @@
 #' @author Brendan Rocks \email{rocks.brendan@@gmail.com}
 #' 
 #' @seealso The base R functions which these wrap; \code{\link{save}},
-#'   \code{\link{save.image}}, \code{\link{load}}, and \code{\link{source}}
+#'   \code{\link{save.image}} and \code{\link{load}}.
 #'   
 #' @export
-box_save <- function(..., dir_id = box_getwd(), file_name = ".RData"){
+box_save <- function(..., dir_id = box_getwd(), file_name = ".RData", 
+                     description = NULL) {
   temp_file <- normalizePath(file.path(tempdir(), file_name), mustWork = FALSE)
   save(..., file = temp_file)
-  box_ul(dir_id, temp_file)
+  box_ul(dir_id, temp_file, description = description)
 }
 
 #' @rdname box_save
 #' @export
-box_save_image <- function(dir_id = box_getwd(), file_name = ".RData", ...){
+box_save_image <- function(dir_id = box_getwd(), file_name = ".RData", 
+                           description = NULL) {
   temp_file <- normalizePath(file.path(tempdir(), file_name), mustWork = FALSE)
-  save.image(file = temp_file, ...)
+  save.image(file = temp_file)
   
-  box_ul(dir_id, temp_file)
+  box_ul(dir_id, temp_file, description = description)
 }
 
 #' @rdname box_save
 #' @export
-box_load <- function(file_id){  
+box_load <- function(file_id) {  
   temp_dir  <- tempdir()
   temp_file <- box_dl(file_id, overwrite = TRUE, local_dir = temp_dir)
   load(temp_file, envir = globalenv())

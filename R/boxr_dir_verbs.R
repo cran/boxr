@@ -66,7 +66,7 @@
 #' @return An object of class \code{boxr_dir_wide_operation_result}, describing
 #'   the file operations performed
 #'   
-#' @author Brendan Rocks \email{rocks.brendan@@gmail.com}
+#' @author Brendan Rocks \email{foss@@brendanrocks.com}
 #' 
 #' @seealso \code{\link{box_dl}}/\code{\link{box_ul}} for single file 
 #'   operations. \code{\link{box_dir_diff}} is the internal function which 
@@ -212,7 +212,7 @@ box_push <- function(dir_id = box_getwd(), local_dir = getwd(),
   local_dirs <- list.dirs(normalizePath(local_dir), full.names = FALSE)[-1]
   
   if (ignore_dots)
-    local_dirs <- local_dirs[!grepl("\\/\\.", local_dirs)]
+    local_dirs <- local_dirs[!grepl("\\/\\.|^\\.", local_dirs)]
   
   dir_depth <- unlist(
     lapply(
@@ -237,7 +237,7 @@ box_push <- function(dir_id = box_getwd(), local_dir = getwd(),
   
   for (i in 1:length(box_dirs)) {
     catif(paste0(
-      "Comparing local dir ", i,"/",length(local_dirs),": ", local_dirs[i]
+      "Comparing local dir ", i, "/", length(local_dirs), ": ", local_dirs[i]
     ))
     
     new_dir <- boxDirCreate(

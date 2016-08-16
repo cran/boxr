@@ -53,7 +53,7 @@ slightly more involved (see 'Getting Set-Up' below).
 
 \describe{
 
-  A version of this guide is in the pakcage vignette, with some additional
+  A version of this guide is in the package vignette, with some additional
   screenshots. To view the vignette, run \code{vignette("boxr")}.
 
   To use boxr for the first time, you need to enable API access for your
@@ -92,7 +92,7 @@ From this point on, simply running \code{box_auth()} at the start of a
 session should be all that is required.
 }
 \author{
-Brendan Rocks \email{rocks.brendan@gmail.com}
+Brendan Rocks \email{foss@brendanrocks.com}
 }
 \seealso{
 \code{\link{box_auth_on_attach}}, \code{\link{oauth2.0_token}} for

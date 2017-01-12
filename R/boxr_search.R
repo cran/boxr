@@ -48,10 +48,6 @@
 #'   \code{\link{logical}}.
 #' @param owner_user_ids Optional. Limit search to a files owned by a set of 
 #'   users. A vector if IDs, coercible with \code{\link{as.integer64}}.
-#' @param auto_paginate \code{logical}. By default, the box.com will return a 
-#'   fixed number of search results per request. By setting auto_paginate to 
-#'   \code{TRUE}, boxr will keep making new requests untill all search results 
-#'   are in.
 #' @param max \code{numeric}. Upper limit on the number of search results 
 #'   returned (protective measure for users with large numbers of files).
 #' @param ... Parameters passed to \code{box_search}
@@ -68,8 +64,7 @@ box_search <- function(
   content_types = c("name", "description", "file_content", "comments", "tags"),
   type = NULL, file_extensions = NULL, 
   ancestor_folder_ids = NULL, created_at_range = NULL, updated_at_range = NULL,
-  size_range = NULL, trash = FALSE, owner_user_ids = NULL, auto_paginate = TRUE,
-  max = 200
+  size_range = NULL, trash = FALSE, owner_user_ids = NULL, max = 200
 ) {
   
   # Validation & Coercion ---------------------------------------------------  
@@ -171,8 +166,6 @@ box_search <- function(
     "query=", query
   ), collapse = "")
   
-  # return(url)
-  
   # Make the request --------------------------------------------------------
     
   out <- box_search_pagination(url, max = max)
@@ -212,7 +205,9 @@ box_search_pagination <- function(url, max = 200) {
   
   while (next_page) {
     page_url <- paste0(url, "&offset=", (page - 1) * 200)
-    req      <- httr::GET(url, httr::config(token = getOption("boxr.token")))
+    req      <- httr::GET(
+      page_url, httr::config(token = getOption("boxr.token"))
+    )
     
     if (req$status_code == 404) {
       message("box.com indicates that no search results were found")
@@ -226,7 +221,7 @@ box_search_pagination <- function(url, max = 200) {
     n_so_far <- n_so_far + n_req
     total    <- resp$total_count
     
-    if (!n_so_far < total | n_so_far >= max) 
+    if (!n_so_far < total | n_so_far >= max)
       next_page <- FALSE
     
     out <- c(out, resp$entries)

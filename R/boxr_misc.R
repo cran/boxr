@@ -5,7 +5,8 @@
 #' @return A data.frame describing the contents of the the folder specified by 
 #'   \code{dir_id}. Non recursive.
 #'   
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
+#' @author Brendan Rocks \email{foss@@brendanrocks.com} and Ian Lyttle 
+#'   \email{ian.lyttle@@schneider-electric.com}
 #'   
 #' @seealso \code{\link{box_fetch}} and \code{\link{box_push}} for synchronizing
 #'   the contents of local and remote directories. \code{\link{list.files}} for
@@ -21,7 +22,7 @@ box_ls <- function(dir_id = box_getwd()) {
       "https://api.box.com/2.0/folders/",
       box_id(dir_id), 
       "/items?fields=modified_at,content_modified_at,name,id,type,sha1,size,",
-      "owned_by,path_collection,description"
+      "owned_by,path_collection,description&limit=1000"
     ),
     httr::config(token = getOption("boxr.token"))
   )

@@ -28,22 +28,33 @@ box_id <- function(x) {
     return(as.character(bit64::as.integer64(x)))
 }
 
+# helper to identify void values
+is_void <- function(x) {
+  is.null(x) || identical(x, "") || identical(nchar(x), 0L) || is.na(x) 
+}
+
+# helper to discriminate on void values, similar to %||%
+`%|0|%` <- function(x, y) {
+  
+  if (is_void(x)) {
+    return (y)
+  }
+  
+  x
+}
+
 
 # Function to present different package startup messages, based on whether or
 # not it looks like the user has used boxr before
 boxrStartupMessage <- function() {
+  
   new_user <- !file.exists("~/.boxr-oauth")
   
-  packageStartupMessage(paste0(
-    "Welcome to boxr ", utils::packageVersion("boxr"), "!\n",
-    "Bug reports & Getting Help: https://github.com/brendan-R/boxr/issues",
-    if (new_user)
-      paste0(
-        "\n\nSee vignette('boxr') for a short guide on connecting your box.com",
-        " account to R."
-      ),
-    ""
-  ))
+  if (new_user) {
+    packageStartupMessage(
+      "boxr: see `vignette(\"boxr\")` on how to authorize to your Box account."
+    )
+  }
 }
 
 
@@ -117,11 +128,10 @@ box_datetime <- function(x) {
   as.POSIXct(paste0(dt, tz), format = "%Y-%m-%dT%H:%M:%S%z")
 }
 
-
 checkAuth <- function() {
-  if (is.null(getOption("boxr.token")))
+  if (is.null(getOption("boxr.token") %||% getOption("boxr_token_jwt")))
     stop("It doesn't look like you've set up authentication for boxr yet.\n",
-         "See ?box_auth")
+         "See ?box_auth or ?box_auth_jwt")
 }
 
 

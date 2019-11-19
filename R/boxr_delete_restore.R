@@ -1,36 +1,53 @@
-#' Move files to and from the box.com trash folder
+#' Move files within Box, from/to trash directory
 #' 
-#' \itemize{
-#'   \item \code{box_delete_file} moves a file to the trash folder.
-#'   \item \code{box_delete_folder} moves a whole folder (and all of it's 
-#'     contents) to the trash folder.
-#'   \item \code{box_restore_file} moves a file from the trash, to wherever it 
-#'     was before
-#'   \item \code{box_delete_folder} does the same thing for a folder.
+#' In the Box context, deleting a file moves it to a special folder
+#' within your Box account: 'Trash'. As of mid-2019, Box' default
+#' [policy](https://community.box.com/t5/Managing-Files-and-Folders/Manage-Trash/ta-p/19212)
+#' is to retain files in Trash for 30 days.
+#'
+#' \describe{
+#'   \item{`box_delete_file()`}{Move a file to Trash.}
+#'   \item{`box_restore_file()`}{Restore a file from Trash.}
+#'   \item{`box_delete_folder()`}{Move a folder, including contents, to Trash.}
+#'   \item{`box_restore_folder()`}{Restore a folder, including contents, from Trash.}
 #' }
 #' 
 #' @aliases box_delete_folder box_restore_file box_delete_folder
-#' @param file_id The box.com id for the file that you'd like delete/restore
-#' @param dir_id The box.com id for the folder that you'd like delete/restore 
 #' 
-#' @details 'Deleting' a file in this case means moving it to a special folder
-#'   within your box.com account called the 'Trash'. At the time of writing,
-#'   the files are stored for three months before being deleted, and the 
-#'   contents of the folder can be accessed from the top right hand menu of the 
-#'   web interface.
-#' 
-#' @return An object of class 
-#'   \code{\link[=boxr_S3_classes]{boxr_file_reference}}.
-#' 
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
-#' 
-#' @seealso \code{\link{box_ul}}, for putting files there in the first place
+#' @inheritParams box_setwd
+#' @inheritParams box_dl 
+#' @return \describe{
+#'   \item{`box_delete_file()`}{Object with S3 class [`boxr_file_reference`][boxr_S3_classes].}
+#'   \item{`box_restore_file()`}{Object with S3 class [`boxr_file_reference`][boxr_S3_classes].}
+#'   \item{`box_delete_folder()`}{Object with S3 class [`boxr_folder_reference`][boxr_S3_classes].}
+#'   \item{`box_restore_folder()`}{Object with S3 class [`boxr_folder_reference`][boxr_S3_classes].}
+#' }
 #' 
 #' @export
 box_delete_file <- function(file_id) {
   add_file_ref_class(httr::content(boxDeleteFile(file_id)))
 }
 
+#' @rdname box_delete_file
+#' @export
+box_restore_file <- function(file_id) {
+  req <- httr::POST(
+    paste0(
+      "https://api.box.com/2.0/file/",
+      file_id
+    ),
+    get_token()
+  )
+  
+  if (httr::http_status(req)$message == "Success: (201) Created")
+    catif(paste0("file id ", file_id, " sucessfully restored from trash."))
+  
+  # You could add something here to try and anticipate what happened;
+  # the messages from box aren't terribly informative.
+  # e.g. you get a 403 if the folder already exists, which you really shouldn't
+  httr::stop_for_status(req)
+  add_file_ref_class(httr::content(req))
+}
 
 #' @rdname box_delete_file
 #' @export
@@ -47,7 +64,7 @@ box_restore_folder <- function(dir_id) {
       "https://api.box.com/2.0/folders/",
       dir_id
     ),
-    httr::config(token = getOption("boxr.token"))
+    get_token()
   )
   
   if (httr::http_status(req)$message == "Success: (201) Created")
@@ -60,27 +77,6 @@ box_restore_folder <- function(dir_id) {
   add_folder_ref_class(httr::content(req))
 }
 
-
-#' @rdname box_delete_file
-#' @export
-box_restore_file <- function(file_id) {
-  req <- httr::POST(
-    paste0(
-      "https://api.box.com/2.0/file/",
-      file_id
-    ),
-    httr::config(token = getOption("boxr.token"))
-  )
-  
-  if (httr::http_status(req)$message == "Success: (201) Created")
-    catif(paste0("file id ", file_id, " sucessfully restored from trash."))
-  
-  # You could add something here to try and anticipate what happened;
-  # the messages from box aren't terribly informative.
-  # e.g. you get a 403 if the folder already exists, which you really shouldn't
-  httr::stop_for_status(req)
-  add_file_ref_class(httr::content(req))
-}
 
 
 # Internal versions -------------------------------------------------------
@@ -95,7 +91,7 @@ boxDeleteFile <- function(file_id) {
       "https://api.box.com/2.0/files/",
       file_id
     ),
-    httr::config(token = getOption("boxr.token"))
+    get_token()
   )
   
   if (httr::http_status(req)$message == "Success: (204) No Content")
@@ -115,7 +111,7 @@ boxDeleteFolder <- function(dir_id) {
       "https://api.box.com/2.0/folders/",
       dir_id, "?recursive=true"
     ),
-    httr::config(token = getOption("boxr.token"))
+    get_token()
   )
   
   if (httr::http_status(req)$message == "Success: (204) No Content")

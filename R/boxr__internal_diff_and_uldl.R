@@ -1,4 +1,4 @@
-#' Single Directory Operations for Downloading and Uploading mutiple Files
+#' Single Directory Operations for Downloading and Uploading multiple Files
 #' 
 #' Download or upload the contents of a box.com directory, not including 
 #' subdirectories
@@ -7,7 +7,7 @@
 #' 
 #' @inheritParams dirTreeRecursive
 #' 
-#' @return \code{TRUE} for a successful sync, \code{NULL} if the box.com folder 
+#' @return `TRUE` for a successful sync, `NULL` if the box.com folder 
 #' is empty.
 #' @keywords internal
 downloadDirFiles <- function(dir_id, local_dir = getwd(), overwrite = TRUE, 
@@ -41,7 +41,7 @@ downloadDirFiles <- function(dir_id, local_dir = getwd(), overwrite = TRUE,
       ))
       
       downloads[[i]] <-
-        try(box_dl(to_dl$id[i], filename = names(to_dl$id[i]), overwrite = TRUE, 
+        try(box_dl(to_dl$id[i], file_name = names(to_dl$id[i]), overwrite = TRUE, 
                    local_dir = local_dir, pb = FALSE), silent = TRUE)
     }
   

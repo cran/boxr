@@ -1,3 +1,41 @@
+# boxr  0.3.5
+
+## Improvements
+
+* adds automatic-retry to authentication functions, `box_auth()` and `box_auth_service()`. (#131)
+
+* adds `box_auth_service()` to support OAuth2.0 using JWT, also adds `box_dir_invite()` to invite a collaboration on a Box folder. This makes it easier to authenticate to box.com from remote computers (e.g. RStudio Cloud, RStudio Server) (#23)
+
+* modifies `box_source()`: adds `...` argument to pass other arguments to `source()`.
+
+* modifies `box_write()`, `box_dl()`:
+  - deprecates the `filename` argument in favor of `file_name`.
+
+* modifies `box_auth()` (#96):
+  - deprecates `write.Renv` argument
+  - copies text to the clipboard, rather than overwrite the `.Renviron` file
+  - returns `invisible(NULL)` upon success 
+
+* deprecates `box_auth_on_attach()` (#96)
+
+* adds a logo (#92, @nathancday)
+
+* converts pagination method from offset to marker-based paging (#79, @awong234)
+
+* adds option to return specified `fields` in `box_ls()` (#72, @awong234)
+
+* adds updated screen shots (pngs in `images/`) and description for creating a Box App with the new Box Developer Console UI. Also added reference for `box_auth_on_attach` in step 4 'And you're done'. (#57, @nathancday)
+
+## Bug Fixes
+
+* `box_pagination()` refactored to employ marker-based paging instead of offset-based paging, avoiding a hard limit of 300,000 offset (#74, @awong234)
+
+* ~~fixes bug in `box_pagination()` to enforce integer for offset (#71, @awong234)~~ Deprecated, pagination now uses marker-based paging.
+
+* fixes bug in `box_search_files()` (#61, @j450h1)
+
+-------------------------------------------------------------------------------
+
 # boxr v0.3.4
 
 ## Improvements
@@ -74,7 +112,7 @@ write function ([rio::export](https://github.com/leeper/rio)), the file type can
 be determined automatically from the filename provided.
 
 * `box_add_description` A simple way to add a description to a file on box.com. 
-These are a useful way to decribe the contents of a file, and can also be used 
+These are a useful way to describe the contents of a file, and can also be used 
 like commit messages on GitHub, to describe recent changes made.
 
 * `box_fresh_auth` A convenience function for users having trouble 
@@ -91,11 +129,11 @@ place of a file_id string
 
 ## Improvements
 
-* Example of usage with `magrittr` pipes is added to the [README](README.md)
+* Example of usage with `magrittr` pipes is added to the README.
 
 * box file/folder id's are now validated locally before requests are sent
 
-* Filenames are now validated locally, with helpful/informative error mesages
+* Filenames are now validated locally, with helpful/informative error messages
 
 * `box_read` now accepts a user specified read function, which is now by default
 `rio::import`
@@ -112,7 +150,7 @@ interested (`?boxr_S3_classes`)
 * `box_getwd` no longer logs an uninformative message
 
 * Documentation / collaboration improvements (improved function documentation, 
-[variable naming conventions](R/README.md), and a code of conduct)
+variable naming conventions (`R/README.md`), and a code of conduct)
 
 * Improved tests
 
@@ -121,7 +159,7 @@ interested (`?boxr_S3_classes`)
 
 * `options(boxr.progress = TRUE)` is now respected consistently
 
-* Fix for spurious warnings comming from the latest version of `httr` (see 
+* Fix for spurious warnings coming from the latest version of `httr` (see 
 jeroenooms/curl#30 and hadley/httr#252)
 
 * Fix for weird reporting for certain valid API queries, which return exactly 0 
@@ -132,7 +170,7 @@ results
 
 # boxr v0.2.9
 
-Note: Skipped a version increment for CRAN iterationsii
+Note: Skipped a version increment for CRAN iterations
 
 
 ## Bug Fixes
@@ -140,7 +178,7 @@ Note: Skipped a version increment for CRAN iterationsii
 * Namespace stuff for the latest Rbuild under Windows
 
 
-## Installtion
+## Installation
 
 Now up on CRAN:
 
@@ -176,7 +214,7 @@ new users up and running (fc931cd), providing much of the same information as at
 `?box_auth`, but with screenshots and friendlier formatting
 
 * Upon loading boxr, users are now provided with the [GitHub issues 
-URL](https://github.com/brendan-R/boxr/issues) for bug reports. If it looks like
+URL](https://github.com/r-box/boxr/issues) for bug reports. If it looks like
 the user hasn't used boxr before (`!file.exists("~/.boxr_oauth")`), the code to 
 generate the Getting Started vignette is presented (e18864d)
 

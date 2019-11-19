@@ -2,58 +2,53 @@
 
 #' boxr S3 Classes
 #' 
-#' @description {
-#'   boxr has a few very simple S3 classes for the data returned by the API.
-#'   While \code{\link{httr}} returns objects in it's own system of classes,
-#'   generally boxr extracts information, and converts the JSON response to an R
-#'   list with httr::\code{\link{content}} (perhaps with some information judged
-#'   to be extraneous removed). If you'd rather get to the list itself, you can
-#'   do this with  \code{unclass(x)}.
+#' boxr implements a series of S3 classes to manage the data returned by the 
+#' Box API. These classes are built on `list`; if you wish to access the
+#' information directly, you can use `unclass(x)`.
+#' 
+#' **`boxr_file_reference`**
+#' 
+#'  - describes a file created, modified, or deleted at Box.
+#'  - returned by [box_ul()], [box_save()], [box_delete_file()], etc.
+#'  - available methods: [print()].
+#'     
+#' **`boxr_folder_reference`** 
+#' 
+#'  - describes a folder created or deleted at Box.
+#'  - returned by [box_dir_create()], [box_delete_folder()].
+#'  - available methods: [print()].
 #'   
-#'   The following classes are used:
-#'   
-#'   \describe{
-#'     \item{\bold{boxr_file_reference}}{
-#'       Returned by \code{\link{box_ul}}, and similar functions (e.g. 
-#'       \code{\link{box_save}}). A description of a file remotely hosted on 
-#'       box.com. Available methods: \code{print}.
-#'     }
-#'     \item{\bold{boxr_folder_reference}}{
-#'       As above, but for folders/direcotries. Available methods: \code{print}
-#'     }
-#'     \item{\bold{boxr_object_list}}{
-#'       Returned by \code{\link{box_search}}, and related functions. A list,
-#'       with each entry being a reference to a file or folder hosted on box.com
-#'       . Available methods: \code{print}, for a summary of the first few
-#'       results, and \code{as.data.frame}, to coerce some of the API response's
-#'       information to a \code{\link{data.frame}}.
-#'     }
-#'     \item{\bold{boxr_dir_comparison}}{
-#'       Returned by the internal function \code{\link{box_dir_diff}}. Available
-#'       methods: \code{print}, \code{summary}.
-#'     }
-#'     \item{\bold{boxr_dir_wide_operation_result}}{
-#'       Returned by \code{\link{box_fetch}} and \code{\link{box_push}}.
-#'       Available methods: \code{print}, \code{summary}
-#'     }
-#'   }
-#' }
-#'
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
+#' **`boxr_dir_wide_operation_result`** 
+#' 
+#'  - describes the result of a directory-wide operation.
+#'  - returned by [box_fetch()] and [box_push()].
+#'  - available methods: [print()], [summary()].
+#'     
+#' **`boxr_object_list`**
+#' 
+#'  - describes a collection of files at Box.
+#'  - returned by [box_ls()], [box_search()], and related functions.
+#'  - available methods: [print()], [as.data.frame()].
+#'     
+#' **`boxr_dir_comparison`** 
+#' 
+#'  - describes the difference between directories.
+#'  - returned by the internal function [box_dir_diff()].
+#'  - available methods: [print()], [summary()].
 #' 
 #' @name boxr_S3_classes
 NULL
 
 #' @keywords internal
 add_file_ref_class <- function(x) {
-  class(x) <- "boxr_file_reference"
-  x
+class(x) <- "boxr_file_reference"
+x
 }
 
 #' @keywords internal
 add_folder_ref_class <- function(x) {
-  class(x) <- "boxr_folder_reference"
-  x
+class(x) <- "boxr_folder_reference"
+x
 }
 
 #' @export

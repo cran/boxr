@@ -5,13 +5,14 @@
 \alias{box_search_files}
 \alias{box_search_folders}
 \alias{box_search_trash}
-\title{Search the files in a box.com account}
+\title{Search Box files}
 \usage{
 box_search(query = "", content_types = c("name", "description",
-  "file_content", "comments", "tags"), type = NULL, file_extensions = NULL,
-  ancestor_folder_ids = NULL, created_at_range = NULL,
-  updated_at_range = NULL, size_range = NULL, trash = FALSE,
-  owner_user_ids = NULL, max = 200)
+  "file_content", "comments", "tags"), type = NULL,
+  file_extensions = NULL, ancestor_folder_ids = NULL,
+  created_at_range = NULL, updated_at_range = NULL,
+  size_range = NULL, trash = FALSE, owner_user_ids = NULL,
+  max = 200)
 
 box_search_files(query, ...)
 
@@ -20,77 +21,70 @@ box_search_folders(query, ...)
 box_search_trash(query, ...)
 }
 \arguments{
-\item{query}{The search term that you'd like to use}
+\item{query}{\code{character}, search term.}
 
-\item{content_types}{The content types you'd like to search. More than one 
-can be supplied with a vector}
+\item{content_types}{\code{character}, content to search; more than one
+can be supplied with a vector.}
 
-\item{type}{The type of object you'd like returned. The default of 
-\code{NULL} return all possible types. Other acceptable values are "file",
-"folder", or "weblink"}
+\item{type}{\code{character}, type of object to return; the default,
+\code{NULL}, returns all possible types (\code{"file"}, \code{"folder"}, or \code{"weblink"}).}
 
-\item{file_extensions}{A vector of strings containing the file extensions 
-(without dots) by which to narrow your search.}
+\item{file_extensions}{\code{character}, vector of strings containing the file
+extensions (without dots) by which to narrow your search.}
 
-\item{ancestor_folder_ids}{If supplied, results are limited to one or more 
-parent folders}
+\item{ancestor_folder_ids}{\code{numeric} or \code{character}, if supplied,
+results are limited to one or more parent (ancestor) folders.}
 
-\item{created_at_range}{Optional. Limit search to a range of created at 
-times. A vector of two dates (coercible via \code{\link{as.POSIXct}}).}
+\item{created_at_range}{\code{POSIXct} (vector, length 2),
+range of created-at times.}
 
-\item{updated_at_range}{Optional. Limit search to a range of updated at 
-times. A vector of two dates (coercible via \code{\link{as.POSIXct}}).}
+\item{updated_at_range}{\code{POSIXct} (vector, length 2),
+range of updated-at times.}
 
-\item{size_range}{Optional. Limit search to a range of file sizes, in bytes.
-A vector of two whole numbers (coerible via (coercible via
-\code{\link{as.numeric}} and \code{\link{round}})).}
+\item{size_range}{\code{numeric} (vector, length 2),
+range of file sizes (bytes).}
 
-\item{trash}{Should the search be limited to the trash folder? 
-\code{\link{logical}}.}
+\item{trash}{\code{logical}, indicates to search only the trash folder.}
 
-\item{owner_user_ids}{Optional. Limit search to a files owned by a set of 
-users. A vector if IDs, coercible with \code{\link{as.integer64}}.}
+\item{owner_user_ids}{\code{numeric} or \code{character}, limits search to files owned
+by users with these IDs.}
 
-\item{max}{\code{numeric}. Upper limit on the number of search results 
-returned (protective measure for users with large numbers of files).}
+\item{max}{\code{numeric}, upper limit on the number of search results.}
 
-\item{...}{Parameters passed to \code{box_search}}
+\item{...}{Other arguments passed to \code{box_search()}.}
 }
 \value{
-An object of class \code{boxr_object_list}. See 
-  \code{\link{boxr_S3_classes}} for details.
+Object with S3 class \code{\link[=boxr_S3_classes]{boxr_object_list}}.
 }
 \description{
-Search the files in a box.com account
+Search Box files
 }
 \details{
-{
- The box.com API supports a maximum of 200 results per request. If
- \code{max > 200}, then multiple requests will be sent to retrieve and
- combine 'paginated' results for you, behind the scenes.
+The Box API supports a maximum of 200 results per request. If
+\code{max > 200}, then multiple requests will be sent to retrieve and
+combine 'paginated' results for you, behind the scenes.
 
- See the \href{https://community.box.com/t5/Managing-Your-Content/Search-Overview-and-FAQs/ta-p/354}{box.com search description}
- for details of the features of the service.
- Some notable details:
-  \describe{
-    \item{\bold{Full Text Searching}}{
-      Is available for many source code file types, though not including R at
-      the time of writing.
-    }
-    \item{\bold{Boolean Operators Are Supported}}{
-      Such as \code{and}, \code{or}, and \code{not} (upper or lower case).
-    }
-    \item{\bold{Phrases Can Be Searched}}{
-      By putting them in "quotation marks".
-    }
-    \item{\bold{Search Availability}}{
-      It takes around 10 minutes for a newly uploaded file to enter the 
-      search index.
-    }
-  }
+See the \href{https://community.box.com/t5/Managing-Files-and-Folders/Search-for-Files-Folders-and-Content/ta-p/19269}{box.com search description}
+for details of the features of the service.
+Some notable details:
+\itemize{
+\item Full-text searching
+\itemize{
+\item is available for many source code file types, though not including R at
+the time of writing.
+}
+\item Boolean operators are supported
+\itemize{
+\item such as \code{and}, \code{or}, and \code{not} (upper or lower case).
+}
+\item Phrases can be searched
+\itemize{
+\item by putting them in "quotation marks".
+}
+\item Search availability
+\itemize{
+\item it takes around 10 minutes for a newly uploaded file to enter the
+search index.
 }
 }
-\author{
-Brendan Rocks \email{foss@brendanrocks.com}
 }
-

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Box Apps</title>
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Box Apps</h1>
+
+
+
+<p>Any time you interact with the Box API, you will be using a Box application, i.e. a Box-app. If you’ve already used <code>boxr</code> to authenticate with Box, you’ve already used a Box-app.</p>
+<p>You can think of a Box-app as the door through which <code>boxr</code> functions can access Box. For the most part, <code>boxr</code> functions keep this “out-of-mind”. During authentication, Box-apps come to the fore.</p>
+<p>Getting the authentication to work the first time is most difficult part of using this package. Once you get it working, it should <em>just work</em>.</p>
+<p>How you deal with Box-apps may depend on your situation:</p>
+<ul>
+<li><p><strong>“I use a personal Box account”</strong>:</p>
+You will have to set up a Box-app, then authenticate to it.</li>
+<li><p><strong>“I use a Box account that an institution manages”</strong>:</p>
+<p>Your institution may have set up an app already; you may be able to authenticate to it. If not, maybe you can create a Box-app or ask your Box-admin team to create one.</p></li>
+</ul>
+<p>The type of Box-app you use may also depend your situation:</p>
+<ul>
+<li><p><strong>“I want to use <code>boxr</code> interactively, from my local computer”</strong>:</p>
+<p>We recommend you use a Box interactive-app; authenticate using <code>box_auth()</code>. You can read more in this <a href="./boxr-app-interactive.html">interactive-app article</a>.</p></li>
+<li><p><strong>“I want to run an unattended scheduled process, e.g. a report, from a remote machine using <code>boxr</code>”</strong>:</p>
+<p>We recommend you use a Box service-app; authenticate using <code>box_auth_service()</code>. You can read more in this <a href="./boxr-app-service.html">service-app article</a>.</p></li>
+<li><p><strong>“I want to use <code>boxr</code> interactively using a remote machine, perhaps using RStudio Cloud or RStudio Server.”</strong>:</p>
+<p>You could go either way; this situation is covered in both the <a href="./boxr-app-interactive.html">interactive-app article</a> and the <a href="./boxr-app-service.html">service-app article</a>.</p></li>
+</ul>
+<p>This vignette is about the two types of apps that <code>boxr</code> uses, how to authenticate to them, and the security considerations that go along with them:</p>
+<ul>
+<li><p><strong><a href="./boxr-app-interactive.html">Interactive App</a></strong>: This is preferred for interactive use (this includes you hitting the “knit” button in the RStudio IDE). The user authenticates to the app interactively, using the “OAuth Dance”: a browser-window is opened to ask the user’s permission. The app has all the rights of the user who authenticates to it. The <a href="https://developer.box.com/en/guides/applications/custom-apps/oauth2-setup">Box documentation on OAuth 2.0 apps</a> has even more detail.</p></li>
+<li><p><strong><a href="./boxr-app-service.html">Service App</a></strong>: This is useful for unattended use, e.g. on a remote computer. A token (JSON file) is generated using the Box (or Box Enterprise) website. This token can be deployed to the (presumably remote) computer; there is no “OAuth Dance”. Because these apps can act on behalf of the Box system itself, we recommend that you configure the app with a <em>minimal</em> set of privileges, e.g. to access only the Box folder that the app will need. The <a href="https://developer.box.com/en/guides/applications/custom-apps/jwt-setup">Box documentation on JWT apps</a> has even more detail.</p></li>
+</ul>
+<div id="interactive-app" class="section level2">
+<h2>Interactive App</h2>
+<p>An interactive-app is straightforward because it acts on behalf of the user who has authenticated to it, with the privileges of that user (those privileges in the scope of the app). To authenticate using an OAuth2 app, you can use the <code>box_auth()</code> function, which may invoke the “OAuth Dance”.</p>
+<p>More than one user can authenticate to and use a given app; however, each user will be able to use the app only as them-self. There is a restriction: a Box app can handle no more than one request at a time; the greater the number of users of a given app, the greater the probability of a collision.</p>
+<p>The authentication process for an interactive-app is easiest if you have physical control of the computer from which you are trying to authenticate, e.g. your laptop. If you are using a remote computer, e.g. RStudio Server, you can generate this token on a local computer, then upload the token to your RStudio Server.</p>
+<p>Keep in mind that the token retrieved by <code>box_auth()</code> is as “powerful” as the user them-self; it should be treated with all due care. The user’s Box account is no more secure than the security of this token. By default, the <code>boxr</code> token is cached, unencrypted, in the user’s home directory, as <code>~/.boxr-oauth</code>. Because it is unencrypted, you should take care not to commit this file to a git repository.</p>
+<p>We recommend this as the first choice for authentication; it should work well in most situations, for most <code>boxr</code> users. More details on using and creating an interactive-app are given in <a href="./boxr-app-interactive.html">the interactive-app article</a>.</p>
+</div>
+<div id="service-app" class="section level2">
+<h2>Service App</h2>
+<p>There may be situations you want to use <code>boxr</code> as a part of specific unattended tasks. Perhaps it is a scheduled report, perhaps a set of continuous-integration tests. Service-apps are designed for these situations, but they should be used with care - particularly because they are designed to run unattended, outside your daily attention.</p>
+<p>This type of app uses a <em>service</em> account, which is associated with a Box account or a Box Enterprise account. A service account is similar to a user account, but with additional admin functionality. Service accounts are not linked to a particular user account, but they can be configured to act on behalf of <strong>any and all</strong> user accounts for that Box account. Hence, they have additional security considerations.</p>
+<p>You can mitigate this security consideration by restricting the capability of a service-app so that its service-account cannot act only on behalf of a user-account, and can access <strong>only</strong> particular folders. Although it may be administratively-cumbersome, you might consider a separate service-app for each use-case. This way, if a token becomes comprised, the exposure is limited to that folder, that use-case.</p>
+<p>The authentication-process for a JWT app is handled at the Box website, in an admin-console. Here, you can generate a token for your app, then download it so that you can deploy it for your use-case. You can do this <em>once</em>, in contrast with the “OAuth Dance” you need to undertake, from time-to-time, with a standard OAuth2 app.</p>
+<p>A service-app, using JWT authentication, can work for unattended tasks, but please take care to give your app as <em>little</em> capability as needed. More details on using and creating a service-app are given in <a href="./boxr-app-service.html">the service-app article</a>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

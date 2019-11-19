@@ -1,26 +1,28 @@
-#' Retrieve details of previous versions of a remote file
+#' Get details of previous versions of a Box file
 #' 
-#' box.com explicitly versions files. \code{box_previous_versions} returns a
-#' \code{\link{data.frame}} containing information on a file's previous 
-#' versions on box.com. No information about the current version of the file is
+#' Box explicitly versions files; this function returns a
+#' `data.frame` containing information on a file's previous 
+#' versions on Box. No information about the current version of the file is
 #' returned.
 #' 
-#' @param file_id the id of the file you'd like version information about
+#' The returned `data.frame` contains a variable, `file_version_id`, 
+#' which you can use with [box_dl()].
 #' 
-#' @return A \code{\link{data.frame}} containing information about previous 
-#'   versions of the file (if available). Importantly, it contains the 
-#'   \code{file_version_id}, which can be passed to \code{\link{box_dl}}.
-#'
+#' @inheritParams box_dl
+#' 
+#' @return `data.frame` containing information about previous 
+#'   versions of the file (if available). 
+#'   
 #' @references
-#'   This function is a light wrapper for box.com API's \code{versions} method.
+#'   This function is a light wrapper of the 
+#'   [box.com](https://developer.box.com/docs) API `versions` method.
 #'   
-#'   \url{https://developers.box.com/docs/#files-view-versions-of-a-file}
-#'   
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
+#'   <https://developers.box.com/docs/#files-view-versions-of-a-file>
 #' 
-#' @seealso \code{\link{box_dl}}
+#' @seealso [box_dl()]
 #' 
 #' @export
+#' 
 box_previous_versions <- function(file_id) {
   checkAuth()
   
@@ -29,20 +31,20 @@ box_previous_versions <- function(file_id) {
       "https://api.box.com/2.0/files/",
       file_id, "/versions"
     ),
-    httr::config(token = getOption("boxr.token"))
+    get_token()
   )
   
   # The box API isn't very helpful if there are no previous versions. If this
   # is the case, let the user know and exit.
   if (is.null(httr::content(req)[["entries"]])) {
-    message("No previouis versions for this file found.")
+    message("No previous versions for this file found.")
     return(NULL)
   }
   
   # Munge it into a data.frame
   d <- suppressWarnings(
     data.frame(
-      dplyr::rbind_all(lapply(
+      dplyr::bind_rows(lapply(
         httr::content(req)$entries,
         function(x) data.frame(t(unlist(x)))
       ))

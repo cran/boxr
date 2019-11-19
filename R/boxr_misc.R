@@ -1,58 +1,129 @@
-#' Obtain a data.frame describing the contents of a box.com folder
-#' 
-#' @param dir_id The box.com id for the folder that you'd like to query
-#' 
-#' @return A data.frame describing the contents of the the folder specified by 
-#'   \code{dir_id}. Non recursive.
-#'   
-#' @author Brendan Rocks \email{foss@@brendanrocks.com} and Ian Lyttle 
-#'   \email{ian.lyttle@@schneider-electric.com}
-#'   
-#' @seealso \code{\link{box_fetch}} and \code{\link{box_push}} for synchronizing
-#'   the contents of local and remote directories. \code{\link{list.files}} for
-#'   examining the contents of local directories.
-#'   
+#' List files in a Box directory
+#'
+#' Non-recursive
+#'
+#' @inheritParams box_setwd
+#' @param limit  `integer`, maximum number of entries to retrieve per query-page.
+#' @param max    `integer`, maximum number of entries to retrieve in total.
+#' @param fields `character`, fields to return; the default
+#'   value, `NULL`, will return all possible columns: `modified_at`,
+#'   `content_modified_at`, `name`, `id`, `type`, `sha1` ,`size`,
+#'   `owned_by`, `path_collection`, `description`.
+#'
+#' @return Object with S3 class [`boxr_object_list`][boxr_S3_classes].
+#'
+#' @seealso [box_fetch()] and [box_push()] for synchronizing the contents of
+#'   local and remote directories.
+#'
 #' @export
-box_ls <- function(dir_id = box_getwd()) {
+box_ls <- function(dir_id = box_getwd(), limit = 100, max = Inf, fields = NULL) {
+  
+  if (limit > 1000) {
+    warning("The maximum limit is 1000; box_ls is using 1000.")
+    limit <- 1000
+  }
   
   checkAuth()
+    
+  url_root <- "https://api.box.com/2.0"
   
-  req <- httr::GET(
-    paste0(
-      "https://api.box.com/2.0/folders/",
-      box_id(dir_id), 
-      "/items?fields=modified_at,content_modified_at,name,id,type,sha1,size,",
-      "owned_by,path_collection,description&limit=1000"
-    ),
-    httr::config(token = getOption("boxr.token"))
+  url <- httr::parse_url(
+    paste(url_root, "folders", box_id(dir_id), "items", sep = "/")
   )
   
-  out <- httr::content(req)$entries
+  fields_all <- 
+    c("modified_at" ,"content_modified_at", "name", "id", "type",
+      "sha1" ,"size", "owned_by", "path_collection", "description")
+  
+  if (is.null(fields)) {
+    fields <- fields_all
+  } else {
+    assertthat::assert_that(
+      all(fields %in% fields_all),
+      msg = paste("all fields must be in", paste(fields_all, collapse = ", "))
+    )
+  }
+  
+  url$query <- list(
+    fields = paste(fields, collapse = ","),
+    limit = limit
+  )
+  
+  out <- box_pagination(url = url, max = max)
+  
   class(out) <- "boxr_object_list"
+  
   return(out)
 }
 
 
-#' Get/Set Default box.com directory/folder
+#' @keywords internal
+box_pagination <- function(url, max){
+    
+  marker <- character(0)
+  n_so_far <- 0
+  out <- list()
+  url$query$usemarker <- TRUE
+  next_page <- TRUE
+  
+  while (next_page) {
+
+    req <- httr::GET(
+      url,
+      get_token()
+    )    
+
+    if (req$status_code == 404) {
+      message("Error 404: box.com indicates that no results were found, or the folder specified does not exist in your account.")
+      return()
+    }    
+
+    httr::stop_for_status(req)
+    resp <- httr::content(req)
+    n_req    <- length(resp$entries)
+    n_so_far <- n_so_far + n_req
+    out <- c(out, resp$entries)
+    marker <- resp$next_marker
+
+    if (is.null(marker)) {
+      next_page <- FALSE
+    } else {
+        url$query$marker <- marker
+    }
+    
+    if (n_so_far >= max) {
+      return(out)
+    }
+    
+  }
+  
+  return(out)
+  
+}
+
+#' Get/set Box default working-directory
 #' 
-#' @description Providing analgous functionality for the jbase \bold{\code{R}}
-#'   functions \code{\link{getwd}} and \code{\link{setwd}}, these functions set 
-#'   and retrieve a default box.com dir_id, stored in 
-#'   \code{\link{boxr_options}}.
+#' @description
+#' Similar to [getwd()] and [setwd()], 
+#' these functions get and set the folder ID of the working directory 
+#' at [box.com](https://box.com). 
+#' 
+#' This folder ID is also stored in [boxr_options()].
 #'  
 #' @aliases box_getwd
 #' 
-#' @param dir_id The id of the folder you'd like to set as your default
+#' @param dir_id `numeric` or `character`, folder ID at Box.
 #' 
-#' @return \code{box_getwd} returns the id of the default folder. 
-#'   \code{box_setwd} does nothing and is ussed for its side-effects.
-#'   
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
-#'   
-#' @seealso \code{\link{box_ls}} to examine the contents of a remote directory, 
-#'   and \code{\link{box_fetch}}/\code{\link{box_push}} for synchorizing them.
+#' @return \describe{
+#'   \item{`box_getwd()`}{`numeric`, ID for working folder at Box.}
+#'   \item{`box_setwd()`}{`invisible(NULL)`, called for side-effects.}
+#' } 
+#' 
+#' @seealso [box_ls()] to list files in a Box directory, 
+#'   [box_fetch()]/[box_push()] to download/upload directories from/to Box
 #'  
 #' @export
+#' 
 box_setwd <- function(dir_id) {
   
   checkAuth()
@@ -62,7 +133,7 @@ box_setwd <- function(dir_id) {
       "https://api.box.com/2.0/folders/",
       box_id(dir_id)
     ),
-    httr::config(token = getOption("boxr.token"))
+    get_token()
   )
   
   cont <- httr::content(req)
@@ -103,6 +174,8 @@ box_setwd <- function(dir_id) {
     if (!is.null(cont$shared_link))
       paste0("shared link: ", cont$shared_link$url)
   )
+  
+  invisible(NULL)
 }
 
 
@@ -119,33 +192,24 @@ box_getwd <- function() {
 }
 
 
-#' Display global options for boxr
+#' Get boxr options
 #' 
-#' Run \code{boxr_options()} to see what it's possible to set globally.
+#' This function gets the values of boxr's global options.
 #' 
-#' @details
-#' Options can be set in the usual way using \code{\link{options}}, and include:
+#' Options can be set in the usual way, using [options()].
+#'
+#' @return `list`, current values of boxr options, with elements: 
 #' 
 #' \describe{
-#'   \item{\code{box.verbose}}{
-#'     Should boxr print to the console using \code{\link{cat}}? This is
-#'     slightly 'rude' package behaviour, and may cause problems if using the 
-#'     \code{knitr} package.
-#'   }
-#'   \item{\code{box.wd}}{
-#'     A list containg the name and id of the default box.com directory
-#'   }
-#'   \item{\code{box.token}}{
-#'     The token object used for authentication
-#'   }
-#' }   
-#'
-#' @return A \code{list} of the options available
-#' 
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
-#' 
-#' @seealso \code{\link{box_setwd}} for another way to set the default box.com 
-#'   directory
+#'   \item{`boxr.interactive`}{`logical`, indicates if boxr is running in interactive mode.}
+#'   \item{`boxr.progress`}{`logical`, indicates to use progress-bars, if available.}
+#'   \item{`boxr.verbose`}{`logical`, indicates if boxr will use [cat()] to print to the console.
+#'     Setting to `TRUE` may cause problems with `knitr`.}
+#'   \item{`boxr.wd`}{`list`, containing information on the Box working-directory:
+#'     `id` `(numeric)`, and `name` `(character)`.}
+#'   \item{`boxr.wd.path`}{`character`, path to the Box working-directory.}
+#'   \item{`boxr.token`}{Object with S3 class `Token2.0` ([`httr::Token2.0`]).}
+#' }
 #' 
 #' @export
 boxr_options <- function() {
@@ -155,7 +219,8 @@ boxr_options <- function() {
     "boxr.wd.path",
     "boxr.verbose",
     "boxr.progress",
-    "boxr.interactive"
+    "boxr.interactive",
+    "boxr_token_jwt"
   )
   
   o <- options()
@@ -167,23 +232,22 @@ boxr_options <- function() {
 }
 
 
-#' Create a new box.com folder
+#' Create a Box directory
 #' 
-#' Create a new box.com folder
+#' This will create a new folder at Box, with name `dir_name`,
+#' in the Box folder with ID `parent_dir_id`.
 #' 
-#' @param dir_name The name for the directory you'd like to create.
-#' @param parent_dir_id The box.com folder id of the folder you'd like your new
-#'   folder to be within.
+#' @param dir_name `character`, name for new folder at Box.
+#' @param parent_dir_id `character` or `numeric`, 
+#'   ID for the parent folder at Box.
 #' 
-#' @return An object of class 
-#'   \code{\link[=boxr_S3_classes]{boxr_folder_reference}}.
+#' @return Object with S3 class [`boxr_folder_reference`][boxr_S3_classes].
 #' 
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
-#' 
-#' @seealso \code{\link{box_delete_folder}} to delete remote 
-#'   folders/directories, \code{\link{box_ls}} to examine their conetents.
+#' @seealso [box_delete_folder()] to move Box folders to trash,
+#'   [box_ls()] to list files in a Box folder.
 #' 
 #' @export
+#' 
 box_dir_create <- function(dir_name, parent_dir_id = box_getwd()) {
   
   checkAuth()
@@ -197,7 +261,7 @@ box_dir_create <- function(dir_name, parent_dir_id = box_getwd()) {
 boxDirCreate <- function(dir_name, parent_dir_id = box_getwd()) {
   httr::POST(
     "https://api.box.com/2.0/folders/",
-    httr::config(token = getOption("boxr.token")),
+    get_token(),
     encode = "multipart",
     body = 
       paste0(

@@ -1,53 +1,60 @@
-#' Read files from box.com into memory as R objects
+#' Read an R object from a Box file
 #' 
-#' @description {
-#'   \code{box_read} will download a file specified by \code{file_id}, and
-#'   attempt to read it into memory as an R object. This can be useful, for 
-#'   example, to read in a \code{.csv} file as a \code{\link{data.frame}}.
-#'   
-#'   Converting a file to an R object is by default handled by 
-#'   \code{\link{rio}}'s \code{\link[rio]{import}} function. The only 
-#'   modification of it's behavior is that json files are not neccesarily
-#'   coerced to \code{data.frame}s, but can used to store \code{list} data, too.
-#'   In addtion, more specific read functions are provided:
-#'      
-#'   \describe{
-#'     \item{\bold{\code{box_read_csv}}}{ Reads remote \code{.csv} files as 
-#'       \code{\link{data.frame}}s (via \code{\link{read.csv}})
-#'     }
-#'     \item{\bold{\code{box_read_tsv}}}{ Reads remote \code{.tsv} files as 
-#'       \code{\link{data.frame}}s (via \code{\link{read.delim}})
-#'     }
-#'     \item{\bold{\code{box_read_json}}}{ Reads remote \code{.json} files as 
-#'       \code{\link{list}}s (via \code{\link[jsonlite]{toJSON}})
-#'     }
-#'     \item{\bold{\code{box_read_excel}}}{ Reads remote Microsoft Excel files
-#'     as \code{\link{data.frame}}s (via \code{\link[readxl]{read_excel}})
-#'     }
+#' These functions are used to download a Box file, specified by `file_id`, then
+#' attempt to parse its contents into memory as an R object. For 
+#' example, you may wish to read a Box CSV file as a `data.frame`.
+#' 
+#' This is a two-step process. The first is to download the contents
+#' of the file, the second is to parse those contents into an R object.
+#' The default parsing-function is [rio::import()].
+#' 
+#' In addition to `box_read()`, some specific helpers are
+#' provided:
+#' 
+#' \describe{
+#'   \item{`box_read_csv()`}{parse a remote CSV file into a `data.frame`. Default
+#'   read-function is [rio::import()] with `format = "csv"`, which uses [data.table::fread()] if available,
+#'   and [utils::read.csv()] if not. Pass the argument `fread = FALSE` to `...`
+#'   to always use [utils::read.csv()].}
+#'   \item{`box_read_tsv()`}{parse a remote TSV file into a `data.frame`. Default
+#'   read-function is [rio::import()] with `format = "tsv"`, which uses [data.table::fread()] if available,
+#'   and [utils::read.delim()] if not. Pass the argument `fread = FALSE` to `...`
+#'   to always use [utils::read.delim()].}
+#'   \item{`box_read_json()`}{parse a remote JSON file into a R object. Default
+#'   read-function is [jsonlite::fromJSON()].}
+#'   \item{`box_read_excel()`}{parse a remote Microsoft Excel file into a `data.frame`. Default
+#'   read-function is [rio::import()] with `format = "excel"`, which uses [readxl::read_excel()] by default.
+#'   Pass the argument `readxl = FALSE` to `...` to use [openxlsx::read.xlsx()] instead.}
 #'   }
-#' }
 #' 
-#' @param type MIME type (aka internet media type) used to override the content
-#'   type returned by the server. See 
-#'   http://en.wikipedia.org/wiki/Internet_media_type for a list of common types
-#' @param read_fun The function used to read the data into R. Defaults to 
-#'   \code{\link{rio}}::\code{\link{import}}
-#' @param fread Should the function \code{data.table::fread} be used to read 
-#'   \code{.csv} files? Passed to \code{\link{rio}}::\code{\link{import}} (if 
-#'   used).
-#' @param ... Passed to as additional parameters to read_fun
-#'   
-#' @author Brendan Rocks \email{foss@@brendanrocks.com}
+#' @section rio's import() and JSON files:
+#' In rio (0.5.18) there was a change in how JSON files are processed by
+#' [rio::import()], a non-`data.frame` object stored in JSON is no longer coerced
+#' into a `data.frame`. The old behavior would produce unexpected results or fatal errors
+#' if the stored object was not a `data.frame`. The new behavior is closer to that
+#' of the underlying function [jsonlite::fromJSON()] and similar to the behavior for RDS files.
 #' 
-#' @seealso \code{\link{box_dl}} for saving files to disk, 
-#'   \code{\link{box_save}} for working with R workspaces, and 
-#'   \code{\link{box_source}} for working with R code.
-#'   
+#' In keeping with the spirit of `jsonlite`, `box_read_json()` has been
+#' modified to call `jsonlite::fromJSON()` directly, which by-passes the old
+#' "undesirable" behavior of `rio` (< 0.5.18). If you are using the current CRAN
+#' release of `rio` (0.5.16) you should use `box_read_json()` to avoid these issues.
+#' 
 #' @inheritParams box_dl
+#' @param type `character`, 
+#'   [MIME type](http://en.wikipedia.org/wiki/Internet_media_type)  
+#'   used to override the content type returned by the server. 
+#' @param read_fun `function`, used to read (parse) the content into R; for `box_read()`
+#'   the default function is [rio::import()]; the specific helpers
+#'   each use a different function directly.
+#' @param ... Other arguments passed to `read_fun`.
+#'   
+#' @return Object returned by function `read_fun`.   
 #' 
+#' @seealso [box_dl()], [box_save()], [box_source()]
+#'   
 #' @export
 box_read <- function(file_id, type = NULL, version_id = NULL, 
-                     version_no = NULL, read_fun = rio::import, fread = FALSE,
+                     version_no = NULL, read_fun = rio::import,
                      ...) {
   checkAuth()
   
@@ -94,6 +101,8 @@ box_read <- function(file_id, type = NULL, version_id = NULL,
     cont <- read_fun(new_name, ...)
   }
   
+  # this code comment is old (i think) and maybe worth revisiting was rio goes to CRAN (NCD 2019-11-01)
+  # \/
   # rio is imposing the data.frame class on .json files, which isn't lolz.
   # So, if it's classed as a data.frame but doesn't have the 'row.names'
   # attribute, unclass it
@@ -131,7 +140,7 @@ box_read_tsv <- function(file_id, ...) {
 #' @rdname box_read
 #' @export
 box_read_json <- function(file_id, ...) {
-  box_read(file_id, format = "json", ...)
+  box_read(file_id, read_fun = jsonlite::fromJSON, ...)
 }
 
 

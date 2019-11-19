@@ -2,38 +2,27 @@
 % Please edit documentation in R/boxr_misc.R
 \name{boxr_options}
 \alias{boxr_options}
-\title{Display global options for boxr}
+\title{Get boxr options}
 \usage{
 boxr_options()
 }
 \value{
-A \code{list} of the options available
-}
-\description{
-Run \code{boxr_options()} to see what it's possible to set globally.
-}
-\details{
-Options can be set in the usual way using \code{\link{options}}, and include:
+\code{list}, current values of boxr options, with elements:
 
 \describe{
-  \item{\code{box.verbose}}{
-    Should boxr print to the console using \code{\link{cat}}? This is
-    slightly 'rude' package behaviour, and may cause problems if using the 
-    \code{knitr} package.
-  }
-  \item{\code{box.wd}}{
-    A list containg the name and id of the default box.com directory
-  }
-  \item{\code{box.token}}{
-    The token object used for authentication
-  }
+\item{\code{boxr.interactive}}{\code{logical}, indicates if boxr is running in interactive mode.}
+\item{\code{boxr.progress}}{\code{logical}, indicates to use progress-bars, if available.}
+\item{\code{boxr.verbose}}{\code{logical}, indicates if boxr will use \code{\link[=cat]{cat()}} to print to the console.
+Setting to \code{TRUE} may cause problems with \code{knitr}.}
+\item{\code{boxr.wd}}{\code{list}, containing information on the Box working-directory:
+\code{id} \code{(numeric)}, and \code{name} \code{(character)}.}
+\item{\code{boxr.wd.path}}{\code{character}, path to the Box working-directory.}
+\item{\code{boxr.token}}{Object with S3 class \code{Token2.0} (\code{\link[httr:Token2.0]{httr::Token2.0}}).}
 }
 }
-\author{
-Brendan Rocks \email{foss@brendanrocks.com}
+\description{
+This function gets the values of boxr's global options.
 }
-\seealso{
-\code{\link{box_setwd}} for another way to set the default box.com 
-  directory
+\details{
+Options can be set in the usual way, using \code{\link[=options]{options()}}.
 }
-

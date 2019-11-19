@@ -2,21 +2,22 @@
 % Please edit documentation in R/boxr_auth.R
 \name{box_fresh_auth}
 \alias{box_fresh_auth}
-\title{Reauthorise a Problematic box.com connection}
+\title{Re-authenticate to Box (interactive-app)}
 \usage{
 box_fresh_auth(cache = "~/.boxr-oauth", ...)
 }
 \arguments{
-\item{cache}{Passed to \code{cache} in \code{\link{httr}}.}
+\item{cache}{A logical value or a string. \code{TRUE} means to cache
+using the default cache file \code{.httr-oauth}, \code{FALSE} means
+don't cache, and \code{NA} means to guess using some sensible heuristics.
+A string means use the specified path as the cache file.}
 
-\item{...}{Passed to \code{\link{box_auth}}}
+\item{...}{Other arguments passed to \code{\link[=box_auth]{box_auth()}}.}
 }
 \description{
-Very simply, deletes the old token file before trying to re-authorise. This 
-is often the solution to authorisation problems raised by users!
+Deletes the cached token-file before trying to re-authenticate. This
+is often the solution to authentication problems.
 }
 \seealso{
-\code{\link{box_auth}} for the usual method of authorisation, and
-  \code{\link{box_auth_on_attach}} for a lazy one.
+\code{\link[=box_auth]{box_auth()}} for the usual method of authentication.
 }
-

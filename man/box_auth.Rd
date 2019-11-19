@@ -2,100 +2,82 @@
 % Please edit documentation in R/boxr_auth.R
 \name{box_auth}
 \alias{box_auth}
-\title{Authenticate a box.com Account}
+\title{Authenticate to Box (interactive-app)}
 \usage{
-box_auth(client_id = "", client_secret = "", interactive = TRUE,
-  cache = "~/.boxr-oauth", write.Renv = TRUE, ...)
+box_auth(client_id = NULL, client_secret = NULL, interactive = TRUE,
+  cache = "~/.boxr-oauth", write.Renv, ...)
 }
 \arguments{
-\item{client_id}{Optional. The client id for the account you'd like to use.
-\code{character}.}
+\item{client_id}{\code{character},
+the client id for the account to use.}
 
-\item{client_secret}{Optional. The client secret for the account you'd like
-to use. \code{character}.}
+\item{client_secret}{\code{character},
+the client secret for the account to use.}
 
-\item{interactive}{\code{logical}. Should the authorization process happen
-interactively (requiring user input to the R console, and/or a visit to
-box.com)?}
+\item{interactive}{\code{logical}, indicates that the authorization process
+will be interactive (requiring user input to the R console, and/or a
+visit to \href{https://developer.box.com/docs}{box.com}).}
 
-\item{cache}{Passed to \code{cache} in \code{\link{httr}}.}
+\item{cache}{A logical value or a string. \code{TRUE} means to cache
+using the default cache file \code{.httr-oauth}, \code{FALSE} means
+don't cache, and \code{NA} means to guess using some sensible heuristics.
+A string means use the specified path as the cache file.}
 
-\item{write.Renv}{\code{logical}. If authentication was successful, should
-\code{client_id} and \code{client_secret} be written to \code{.Renvirons}
-in your \code{HOME} directory?}
+\item{write.Renv}{\strong{deprecated}.}
 
-\item{...}{Passed to \code{\link{oauth2.0_token}}}
+\item{...}{Other arguments passed to \code{\link[httr:oauth2.0_token]{httr::oauth2.0_token()}}.}
 }
 \value{
-Returns \code{TRUE} if connection successful, throws an error
-  otherwise. Invoked for it's side effect; OAuth2.0 connection to the
-  box.com API.
-
-Your \code{client_id} and \code{client_secret} will be written to
-\code{~/.Renviron} for future use, and a token object will be wrttien to
-the path supplied bu \code{cache} (\code{~/.boxr-oauth} by default).
-
-See \code{\link{oauth2.0_token}} for details.
+\code{invisible(NULL)}, called for side-effects.
 }
 \description{
-\code{box_auth} serves two purposes:
-  \enumerate{
-    \item Setting up box.com accounts with \code{boxr} for the first time
-    \item Connecting to previously used box.com accounts
-  }
-
-In either case, it should be sufficient to run \code{box_auth()} with no
-parameters. If you've authenticated with boxr before, this should be all
-that is required. However, the first time you use boxr, the process is
-slightly more involved (see 'Getting Set-Up' below).
-}
-\section{Getting Set-Up}{
-
-\describe{
-
-  A version of this guide is in the package vignette, with some additional
-  screenshots. To view the vignette, run \code{vignette("boxr")}.
-
-  To use boxr for the first time, you need to enable API access for your
-  box.com account. The process is slightly annoying. You only need to do it
-  once - it takes around 2 minutes.
-
-  The next time you use boxr, you should be able to just run
-  \code{box_auth()} (without entering anything else) to be authenticated and
-  ready-to-go.
-
-  \item{\bold{1. 'Create an app'}}{
-    At \url{https://www.box.com/developers}, click on 'My Apps', in the top
-    right hand corner log in and create a new 'app' for your box.com account.
-    This won't create an app of any description; you'll simply be granting
-    yourself programmatic access to your files. You can call it anything you
-    like.
-  }
-  \item{\bold{2. Set OAuth2 Parameters}}{
-    On the next screen, you'll want to check the box for \bold{Content API
-    Access Only}, and enter \code{http://localhost} as your
-    \bold{redirect_uri}.
-  }
-  \item{\bold{3. Connect boxr to your account}}{
-    Run \code{box_auth()} and pass your \code{client_id} and
-    \code{client_secret} to the console when prompted. These strings are
-    not' enough for someone to access your account maliciously. However,
-    it's still a good idea to keep them safe, and out of any files or code
-    which might be shared with others.
-  }
+There are two common use-cases for \code{box_auth()}:
+\enumerate{
+\item Connecting to \href{https://developer.box.com/docs}{box.com}
+accounts from \strong{boxr} for the first time.
+\item Connecting to previously-connected
+\href{https://developer.box.com/docs}{box.com} accounts.
 }
 
-A browser window should open, for you to formally grant yourself access to
-your files at box.com.
+In the first case, you will need to provide \code{box_auth()} with
+\code{client_id} and \code{client_secret}.
 
-From this point on, simply running \code{box_auth()} at the start of a
-session should be all that is required.
+In the second case, you can call \code{box_auth()} with no arguments;
+the function will look for these in your R environment.
+
+To run this function the first time, you will need access to the \code{client_id}
+and \code{client_secret} of a Box interactive-app. If you are using a work account,
+this information might be provided to you by your Box-admin team. If you are
+using a personal account, you will have to set up a Box interactive-app.
+
+For both cases, these procedures are detailed in this boxr
+\href{https://r-box.github.io/boxr/articles/boxr-app-interactive.html}{interactive-app article}.
 }
-\author{
-Brendan Rocks \email{foss@brendanrocks.com}
+\section{Side-effects}{
+
+
+This function has some side effects which make subsequent calls to
+\code{box_auth()} easier:
+\itemize{
+\item a browser window may be opened at \href{https://developer.box.com/docs}{box.com},
+for you to authorize to your Box app.
+\item a token file is written, according to the value of \code{cache}. The default
+behaviour is to write this file to \code{~/.boxr-oauth}.
+\item some global \code{\link[=options]{options()}} are set for your session to manage the token.
+\item environment variables \code{BOX_USER_ID}, \code{BOX_CLIENT_ID},
+and \code{BOX_CLIENT_SECRET} are set.
+\item if these environment variables have changed, and you have the
+\href{https://usethis.r-lib.org}{usethis} package installed, it will copy
+some text to your clipboard that you can paste into your \code{.Renviron} file.
+\item a message is printed to the console.
 }
+}
+
 \seealso{
-\code{\link{box_auth_on_attach}}, \code{\link{oauth2.0_token}} for
-  details of how the tokens are handled
+\describe{
+\item{\code{\link[=box_auth_service]{box_auth_service()}}}{for authenticating to service-apps.}
+\item{\code{\link[httr:oauth2.0_token]{httr::oauth2.0_token()}}}{for details on how tokens are handled.}
+\item{\href{https://developer.box.com/en/guides/applications/custom-apps/oauth2-setup}{Box Developers: Setup with OAuth 2.0}}{
+documentation for setting up Box (interactive) apps with OAuth 2.0.}
 }
-
+}

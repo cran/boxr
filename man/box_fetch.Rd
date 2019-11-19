@@ -3,92 +3,82 @@
 \name{box_fetch}
 \alias{box_fetch}
 \alias{box_push}
-\title{Recursive, Directory-wide Operations to Synchronize Local and box.com
-directories}
+\title{Download/upload directories from/to Box}
 \usage{
-box_fetch(dir_id = box_getwd(), local_dir = getwd(), recursive = TRUE,
-  overwrite = FALSE, delete = FALSE)
+box_fetch(dir_id = box_getwd(), local_dir = getwd(),
+  recursive = TRUE, overwrite = FALSE, delete = FALSE)
 
-box_push(dir_id = box_getwd(), local_dir = getwd(), ignore_dots = TRUE,
-  overwrite = FALSE, delete = FALSE)
+box_push(dir_id = box_getwd(), local_dir = getwd(),
+  ignore_dots = TRUE, overwrite = FALSE, delete = FALSE)
 }
 \arguments{
-\item{dir_id}{The id for the box.com folder}
+\item{dir_id}{\code{numeric} or \code{character}, folder ID at Box.}
 
-\item{local_dir}{The path to the local directory}
+\item{local_dir}{\code{character}, path to local directory.}
 
-\item{recursive}{\code{logical}. Should the call include subdirectories and 
-thier contents?}
+\item{recursive}{\code{logical}, indicates to include subdirectories.}
 
-\item{overwrite}{Where the same files exist in both the origin and the 
-destination, and the files in the origin are newer, should the files
-in the destination be updated (overwritten)?}
+\item{overwrite}{\code{logical}, indicates that newer files at origin will
+overwrite older files at destination.}
 
-\item{delete}{\code{logical}. Should files which exist in the destination,
-but not the origin, be deleted?}
+\item{delete}{\code{logical}, indicates to delete files that exist at destination,
+but not at origin.}
 
-\item{ignore_dots}{\code{logical}. Should local directories with filenames
-begining with dots be ignored? This is useful for 'invisible' folders such 
-as \code{.git} and \code{.Rproj.user} where uploading them may be 
-unexpected.}
+\item{ignore_dots}{\code{logical}, indicates to ignore directories with names
+that begin with dots, e.g. \code{.git} and \code{.Rproj.user}.}
 }
 \value{
-An object of class \code{boxr_dir_wide_operation_result}, describing
-  the file operations performed
+Object with S3 class \code{\link[=boxr_S3_classes]{boxr_dir_wide_operation_result}}.
 }
 \description{
-{
-  These functions take a path to a local directory, and a box.com folder id,
-  and perform sychronization operations.
-  
-  \code{box_fetch} downloads the contents of a box.com folder to a local 
-  directory.
+\describe{
+\item{\code{box_fetch()}}{download the contents of a Box folder to a local
+directory}
+\item{\code{box_push()}}{upload the contents of a local directory to a Box
+folder}
+}
 
-  \code{box_push} uploads the contents of local directory to a box.com 
-  folder.
-  
-  Files which are present in the origin but not the destination will be
-  copied over. 
-  
-  Behaviour when a file exists in both depends on the parameters described
-  below.
+Files present in the origin but not the destination will be
+copied over.
+
+Behaviour when a file exists in both depends on the arguments supplied.
 }
+\section{Overwrite/Update}{
+
+
+In the interests of preventing mishaps, \code{overwrite} is by default set
+to \code{FALSE}, which means that files which exist in the destination,
+but which are out of date, are not modified.
+
+Setting \code{overwrite} to \code{TRUE} is likely to produce expected
+behavior for most users.
+
+This is a conservative precaution to prevent users unexpectedly overwriting
+their files, and may change as a default in later releases.
+
+However, files at Box are versioned, and most
+operating systems have file recovery features (e.g. 'Trash'
+(Ubuntu/Debian/OSX), or 'Recycle Bin' (Windows)), so unintended
+modification of files will be revertible for most users.
 }
-\details{
-\bold{Overwrite/Update}\cr
-  In the interests of preventing mishaps, \code{overwrite} is by default set
-  to \code{FALSE}, which means that files which exist in the destination,
-  but which are out of date, are not modified.
-  
-  Setting \code{overwrite} to \code{TRUE} is likely to produce expected
-  behavior for most users.
-  
-  This is a conservative precaution to prevent users unexpectedly overwriting
-  their files, and may change as a default in later releases. 
-  
-  However, files which are updated on box.com are versioned, and most
-  operating systems have file recovery features (e.g. 'Trash'
-  (Ubuntu/Debian/OSX), or 'Recycle Bin' (Windows)), so unintended 
-  modification of files will be revertable for most users.
-  
-  \bold{Implementation}\cr
-  At the time of writing, the box.com API only allows for one file at a time
-  to be uploaded/downloaded, and as a result, boxr recursively scans the
-  directory tree, uploading/downloading files in loops. Because the box.com
-  API can send, but not accept, gzipped files, downloading tends to be faster
-  than uploading.
-  
-  \code{box_fetch}/\code{box_push} rely on the internal function 
-  \code{\link{box_dir_diff}} to determine how to process individual files
-  (e.g. which to update, which to leave as is, etc.). See it's help page for
-  details.
+
+\section{Implementation}{
+
+
+At the time of writing, the Box API allows for only one file at a time
+to be uploaded/downloaded. As a result, boxr recursively scans the
+directory tree, uploading/downloading files in loops. Because the Box
+API can send, but not accept, gzipped files, downloading tends to be faster
+than uploading.
+
+\code{box_fetch()}/\code{box_push()} rely on the internal function
+\code{\link[=box_dir_diff]{box_dir_diff()}} to determine how to process individual files
+(i.e. which to update, which to leave as is, etc.). See its help page for
+details.
 }
-\author{
-Brendan Rocks \email{foss@brendanrocks.com}
-}
+
 \seealso{
-\code{\link{box_dl}}/\code{\link{box_ul}} for single file 
-  operations. \code{\link{box_dir_diff}} is the internal function which 
-  determines how files should be processed.
+\code{\link[=box_dl]{box_dl()}}/\code{\link[=box_ul]{box_ul()}} for single file
+operations, \code{\link[=box_dir_diff]{box_dir_diff()}}
+determines how files should be processed
 }
-

@@ -5,11 +5,21 @@
 \alias{box_push}
 \title{Download/upload directories from/to Box}
 \usage{
-box_fetch(dir_id = box_getwd(), local_dir = getwd(),
-  recursive = TRUE, overwrite = FALSE, delete = FALSE)
+box_fetch(
+  dir_id = box_getwd(),
+  local_dir = getwd(),
+  recursive = TRUE,
+  overwrite = FALSE,
+  delete = FALSE
+)
 
-box_push(dir_id = box_getwd(), local_dir = getwd(),
-  ignore_dots = TRUE, overwrite = FALSE, delete = FALSE)
+box_push(
+  dir_id = box_getwd(),
+  local_dir = getwd(),
+  ignore_dots = TRUE,
+  overwrite = FALSE,
+  delete = FALSE
+)
 }
 \arguments{
 \item{dir_id}{\code{numeric} or \code{character}, folder ID at Box.}
@@ -41,7 +51,7 @@ folder}
 Files present in the origin but not the destination will be
 copied over.
 
-Behaviour when a file exists in both depends on the arguments supplied.
+Behavior when a file exists in both depends on the arguments supplied.
 }
 \section{Overwrite/Update}{
 

@@ -4,8 +4,12 @@
 \alias{box_dir_diff}
 \title{Compare the contents of Remote and Local Directories}
 \usage{
-box_dir_diff(dir_id = box_getwd(), local_dir = getwd(), load = "up",
-  folders = FALSE)
+box_dir_diff(
+  dir_id = box_getwd(),
+  local_dir = getwd(),
+  load = "up",
+  folders = FALSE
+)
 }
 \arguments{
 \item{dir_id}{The id of the box.com folder which you'd like to use for the
@@ -128,7 +132,7 @@ timestamp which has a consistent definition for UNIX and Windows
 systems.
 }
 \references{
-\url{https://developers.box.com/docs}
+\url{https://developer.box.com/guides/folders/}
 }
 \seealso{
 \code{\link[=box_fetch]{box_fetch()}} and \code{\link[=box_push]{box_push()}}, which depend on

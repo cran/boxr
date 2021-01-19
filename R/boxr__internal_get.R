@@ -44,7 +44,7 @@ boxGet <- function(file_id, local_file, version_id = NULL, version_no = NULL,
     version_no <- as.numeric(version_no)
     assertthat::assert_that(is.numeric(version_no))
     
-    versions <- box_previous_versions(file_id)
+    versions <- box_version_history(file_id)
     
     # Check that the version number exists!
     if (version_no > (nrow(versions) + 1)) {
@@ -60,7 +60,7 @@ boxGet <- function(file_id, local_file, version_id = NULL, version_no = NULL,
     
     # If the version number is for an old version, take the id
     if (!is.null(version_no) && version_no <= nrow(versions)) {
-      version_id <- versions$file_version_id[version_no]
+      version_id <- versions$version_id[version_no]
     }
   }
   
@@ -72,7 +72,8 @@ boxGet <- function(file_id, local_file, version_id = NULL, version_no = NULL,
       stop("version_id must be an integer, 11 characters in length")
     
     # The call with the version url parameter
-    req <- httr::GET(
+    req <- httr::RETRY(
+      "GET",
       paste0(
         "https://api.box.com/2.0/files/",
         file_id, "/content", "?version=", version_id
@@ -81,11 +82,13 @@ boxGet <- function(file_id, local_file, version_id = NULL, version_no = NULL,
         httr::write_disk(local_file, TRUE),
       if (pb)
         httr::progress(),
-      get_token()
+      get_token(),
+      terminate_on = box_terminal_http_codes()
     )
   } else {
     # The call without the version url parameter (e.g the latest version)
-    req <- httr::GET(
+    req <- httr::RETRY(
+      "GET",
       paste0(
         "https://api.box.com/2.0/files/",
         file_id, "/content"
@@ -94,7 +97,8 @@ boxGet <- function(file_id, local_file, version_id = NULL, version_no = NULL,
         httr::write_disk(local_file, TRUE),
       if (pb)
         httr::progress(),
-      get_token()
+      get_token(),
+      terminate_on = box_terminal_http_codes()
     ) 
   }
   

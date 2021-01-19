@@ -7,12 +7,19 @@
 \alias{box_search_trash}
 \title{Search Box files}
 \usage{
-box_search(query = "", content_types = c("name", "description",
-  "file_content", "comments", "tags"), type = NULL,
-  file_extensions = NULL, ancestor_folder_ids = NULL,
-  created_at_range = NULL, updated_at_range = NULL,
-  size_range = NULL, trash = FALSE, owner_user_ids = NULL,
-  max = 200)
+box_search(
+  query = "",
+  content_types = c("name", "description", "file_content", "comments", "tags"),
+  type = NULL,
+  file_extensions = NULL,
+  ancestor_folder_ids = NULL,
+  created_at_range = NULL,
+  updated_at_range = NULL,
+  size_range = NULL,
+  trash = FALSE,
+  owner_user_ids = NULL,
+  max = 200
+)
 
 box_search_files(query, ...)
 
@@ -64,27 +71,29 @@ The Box API supports a maximum of 200 results per request. If
 \code{max > 200}, then multiple requests will be sent to retrieve and
 combine 'paginated' results for you, behind the scenes.
 
-See the \href{https://community.box.com/t5/Managing-Files-and-Folders/Search-for-Files-Folders-and-Content/ta-p/19269}{box.com search description}
+See the \href{https://support.box.com/hc/en-us/articles/360043696314-Search-for-Files-Folders-and-Content}{box.com search description}
 for details of the features of the service.
 Some notable details:
 \itemize{
-\item Full-text searching
+\item Full-text searching is the default
 \itemize{
-\item is available for many source code file types, though not including R at
-the time of writing.
+\item available for many source code file types, but not R scripts.
+\item by default Box seaches by word/token and uses the \code{OR} operation e.g.
+\code{box_search("this that")} is equivilant to \code{box_search("this OR that")}
 }
-\item Boolean operators are supported
+\item Reserved words for boolean operations
 \itemize{
-\item such as \code{and}, \code{or}, and \code{not} (upper or lower case).
+\item \code{AND}, \code{OR}, and \code{NOT} (uppercase only) are interpreted as special context e.g.
+\code{box_search("NOT this")}, \code{box_search("this AND that")}
 }
-\item Phrases can be searched
+\item Exact phrases can be matched
 \itemize{
-\item by putting them in "quotation marks".
+\item by surrounding them with double quotation marks e.g.
+\code{box_search('"this exact phrase"')} or \verb{box_search("\\"this exact phrase\\"")}
 }
-\item Search availability
+\item Searchability is not instantaneous
 \itemize{
-\item it takes around 10 minutes for a newly uploaded file to enter the
-search index.
+\item it can take >10 minutes for a newly uploaded file to become findable
 }
 }
 }

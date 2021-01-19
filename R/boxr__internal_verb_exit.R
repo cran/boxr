@@ -49,15 +49,33 @@ returnDwOp <- function(op_detail) {
       "new local directories created",
       "new remote directories created"
     )
-  
+
   file_list <- 
     lapply(
       items_list,
       function(item)
         suppressWarnings(
-          data.frame(dplyr::bind_rows(lapply(
-            op_detail$files, function(x) data.frame(x[item])
-          )))
+          
+          lapply(op_detail$files,
+                 function(x) {
+                   data.frame(x[item]) %>%
+                     dplyr::mutate_all(as.character)
+                 }) %>%
+            dplyr::bind_rows()
+         
+          
+          # data.frame(dplyr::bind_rows(
+          #   lapply(
+          #     op_detail$files, function(x) {
+          #       y <- data.frame(x[item])
+          #       if ("mode" %in% names(y)) {
+          #         y["mode"] <- unclass(y["mode"])
+          #         y
+          #       }
+          #       y
+          #     }
+          # )))
+          
         )
     )
   

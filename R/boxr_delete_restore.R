@@ -2,7 +2,7 @@
 #' 
 #' In the Box context, deleting a file moves it to a special folder
 #' within your Box account: 'Trash'. As of mid-2019, Box' default
-#' [policy](https://community.box.com/t5/Managing-Files-and-Folders/Manage-Trash/ta-p/19212)
+#' [policy](https://support.box.com/hc/en-us/articles/360044196093-Manage-Trash)
 #' is to retain files in Trash for 30 days.
 #'
 #' \describe{
@@ -14,29 +14,31 @@
 #' 
 #' @aliases box_delete_folder box_restore_file box_delete_folder
 #' 
-#' @inheritParams box_setwd
-#' @inheritParams box_dl 
+#' @inheritParams box_browse
 #' @return \describe{
-#'   \item{`box_delete_file()`}{Object with S3 class [`boxr_file_reference`][boxr_S3_classes].}
+#'   \item{`box_delete_file()`}{Invisible `NULL`, called for side effects.}
 #'   \item{`box_restore_file()`}{Object with S3 class [`boxr_file_reference`][boxr_S3_classes].}
-#'   \item{`box_delete_folder()`}{Object with S3 class [`boxr_folder_reference`][boxr_S3_classes].}
+#'   \item{`box_delete_folder()`}{Invisible `NULL`, called for side effects.}
 #'   \item{`box_restore_folder()`}{Object with S3 class [`boxr_folder_reference`][boxr_S3_classes].}
 #' }
 #' 
 #' @export
 box_delete_file <- function(file_id) {
-  add_file_ref_class(httr::content(boxDeleteFile(file_id)))
+  boxDeleteFile(file_id)
+  invisible(NULL)
 }
 
 #' @rdname box_delete_file
 #' @export
 box_restore_file <- function(file_id) {
-  req <- httr::POST(
+  req <- httr::RETRY(
+    "POST",
     paste0(
       "https://api.box.com/2.0/file/",
       file_id
     ),
-    get_token()
+    get_token(),
+    terminate_on = box_terminal_http_codes()
   )
   
   if (httr::http_status(req)$message == "Success: (201) Created")
@@ -52,19 +54,22 @@ box_restore_file <- function(file_id) {
 #' @rdname box_delete_file
 #' @export
 box_delete_folder <- function(dir_id) {
-  add_folder_ref_class(httr::content(boxDeleteFolder(dir_id)))
+  boxDeleteFolder(dir_id)
+  invisible(NULL)
 }
 
 
 #' @rdname box_delete_file
 #' @export
 box_restore_folder <- function(dir_id) {
-  req <- httr::POST(
+  req <- httr::RETRY(
+    "POST",
     paste0(
       "https://api.box.com/2.0/folders/",
       dir_id
     ),
-    get_token()
+    get_token(),
+    terminate_on = box_terminal_http_codes()
   )
   
   if (httr::http_status(req)$message == "Success: (201) Created")
@@ -86,12 +91,14 @@ box_restore_folder <- function(dir_id) {
 
 #' @keywords internal
 boxDeleteFile <- function(file_id) {
-  req <- httr::DELETE(
+  req <- httr::RETRY(
+    "DELETE",
     paste0(
       "https://api.box.com/2.0/files/",
       file_id
     ),
-    get_token()
+    get_token(),
+    terminate_on = box_terminal_http_codes()
   )
   
   if (httr::http_status(req)$message == "Success: (204) No Content")
@@ -106,12 +113,14 @@ boxDeleteFile <- function(file_id) {
 
 #' @keywords internal
 boxDeleteFolder <- function(dir_id) {
-  req <- httr::DELETE(
+  req <- httr::RETRY(
+    "DELETE",
     paste0(
       "https://api.box.com/2.0/folders/",
       dir_id, "?recursive=true"
     ),
-    get_token()
+    get_token(),
+    terminate_on = box_terminal_http_codes()
   )
   
   if (httr::http_status(req)$message == "Success: (204) No Content")

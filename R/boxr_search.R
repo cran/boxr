@@ -6,23 +6,25 @@
 #'  `max > 200`, then multiple requests will be sent to retrieve and
 #'  combine 'paginated' results for you, behind the scenes.
 #' 
-#'  See the [box.com search description](https://community.box.com/t5/Managing-Files-and-Folders/Search-for-Files-Folders-and-Content/ta-p/19269)
+#'  See the [box.com search description](https://support.box.com/hc/en-us/articles/360043696314-Search-for-Files-Folders-and-Content)
 #'  for details of the features of the service.
 #'  Some notable details:
 #'  
-#'  * Full-text searching 
-#'    - is available for many source code file types, though not including R at
-#'      the time of writing.
+#'  * Full-text searching is the default
+#'    - available for many source code file types, but not R scripts.
+#'    - by default Box seaches by word/token and uses the `OR` operation e.g.
+#'    `box_search("this that")` is equivilant to `box_search("this OR that")` 
 #'       
-#'  * Boolean operators are supported 
-#'    - such as `and`, `or`, and `not` (upper or lower case).
+#'  * Reserved words for boolean operations
+#'    - `AND`, `OR`, and `NOT` (uppercase only) are interpreted as special context e.g.
+#'    `box_search("NOT this")`, `box_search("this AND that")`
 #'       
-#'  * Phrases can be searched 
-#'    - by putting them in "quotation marks".
+#'  * Exact phrases can be matched
+#'    - by surrounding them with double quotation marks e.g.
+#'    `box_search('"this exact phrase"')` or `box_search("\"this exact phrase\"")` 
 #'       
-#'  * Search availability 
-#'    - it takes around 10 minutes for a newly uploaded file to enter the 
-#'      search index.
+#'  * Searchability is not instantaneous
+#'    - it can take >10 minutes for a newly uploaded file to become findable
 #' 
 #' @param query `character`, search term. 
 #' @param content_types `character`, content to search; more than one 
@@ -45,7 +47,7 @@
 #' @param max `numeric`, upper limit on the number of search results.
 #' @param ... Other arguments passed to `box_search()`.
 #' 
-#' @return Object with S3 class [`boxr_object_list`][boxr_S3_classes].
+#' @inherit box_ls return
 #'   
 #' @export
 box_search <- function(
@@ -196,9 +198,11 @@ box_search_pagination <- function(url, max = 200) {
   
   while (next_page) {
     page_url <- paste0(url, "&offset=", (page - 1) * 200)
-    req      <- httr::GET(
+    req      <- httr::RETRY(
+      "GET",
       page_url,
-      get_token()
+      get_token(),
+      terminate_on = box_terminal_http_codes()
     )
     
     if (req$status_code == 404) {

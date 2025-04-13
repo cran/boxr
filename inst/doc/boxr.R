@@ -9,9 +9,9 @@ incl <- function(x){
   knitr::include_graphics(path)
 }
 
-## ---- out.width="100%", echo=FALSE--------------------------------------------
+## ----out.width="100%", echo=FALSE---------------------------------------------
 incl("box-folder-id.png")
 
-## ---- out.width="100%", echo=FALSE--------------------------------------------
+## ----out.width="100%", echo=FALSE---------------------------------------------
 incl("box-file-id.png")
 

@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -78,31 +78,31 @@ boxr:::stack_rows_df(entries)
 boxr:::stack_rows_tbl(entries)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library("boxr")
-#  
-#  box_auth()
+# library("boxr")
+# 
+# box_auth()
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  # this works for Ian's Box account - no-one else
-#  dir_id <- "123053109701"
-#  
-#  # returns a httr response object
-#  box_api_response <- function(verb, endpoint) {
-#  
-#    response <-
-#      httr::RETRY(
-#        verb,
-#        glue::glue("https://api.box.com/2.0/{endpoint}"),
-#        boxr:::get_token(),
-#        terminate_on = boxr:::box_terminal_http_codes()
-#      )
-#  
-#    response
-#  }
-#  
-#  response <- box_api_response("GET", glue::glue("folders/{dir_id}/items/"))
-#  
-#  response
+# # this works for Ian's Box account - no-one else
+# dir_id <- "123053109701"
+# 
+# # returns a httr response object
+# box_api_response <- function(verb, endpoint) {
+# 
+#   response <-
+#     httr::RETRY(
+#       verb,
+#       glue::glue("https://api.box.com/2.0/{endpoint}"),
+#       boxr:::get_token(),
+#       terminate_on = boxr:::box_terminal_http_codes()
+#     )
+# 
+#   response
+# }
+# 
+# response <- box_api_response("GET", glue::glue("folders/{dir_id}/items/"))
+# 
+# response
 
 ## -----------------------------------------------------------------------------
 box_content <- function(response, task = NULL) {
@@ -118,55 +118,55 @@ box_content <- function(response, task = NULL) {
 }
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  content <- box_content(response, task = "get directory listing")
-#  
-#  str(content)
+# content <- box_content(response, task = "get directory listing")
+# 
+# str(content)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  box_parse_entries <- function(entries) {
-#    purrr::map(entries, parse_entry)
-#  }
-#  
-#  parsed <- box_parse_entries(content$entries)
-#  
-#  str(parsed)
+# box_parse_entries <- function(entries) {
+#   purrr::map(entries, parse_entry)
+# }
+# 
+# parsed <- box_parse_entries(content$entries)
+# 
+# str(parsed)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  tbl <- boxr:::stack_rows_tbl(parsed)
-#  
-#  tbl
+# tbl <- boxr:::stack_rows_tbl(parsed)
+# 
+# tbl
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  box_dir_info <- function(dir_id) {
-#  
-#    response <- box_api_response("GET", glue::glue("folders/{dir_id}/items/"))
-#  
-#    entries <- box_content(response, task = "get directory listing")[["entries"]]
-#  
-#    # The above is an oversimplification. In actuality, these two functions
-#    # would be combined into one function that would take care of the pagination,
-#    # something like:
-#    #
-#    # entries <-
-#    #  box_api_entries(
-#    #    "GET",
-#    #     endpoint = glue::glue("folders/{dir_id}/items/"),
-#    #     task = "get directory listing"
-#    #  )
-#    #
-#    # box_api_entries() would call box_api_response() and box_content()
-#  
-#    parsed <- box_parse_entries(entries)
-#  
-#    stacked <- boxr:::stack_rows_tbl(parsed)
-#  
-#    # not doing anything here, but box_version_history() changes some columns
-#    wrangled <- stacked
-#  
-#    wrangled
-#  }
-#  
-#  box_dir_info(dir_id)
+# box_dir_info <- function(dir_id) {
+# 
+#   response <- box_api_response("GET", glue::glue("folders/{dir_id}/items/"))
+# 
+#   entries <- box_content(response, task = "get directory listing")[["entries"]]
+# 
+#   # The above is an oversimplification. In actuality, these two functions
+#   # would be combined into one function that would take care of the pagination,
+#   # something like:
+#   #
+#   # entries <-
+#   #  box_api_entries(
+#   #    "GET",
+#   #     endpoint = glue::glue("folders/{dir_id}/items/"),
+#   #     task = "get directory listing"
+#   #  )
+#   #
+#   # box_api_entries() would call box_api_response() and box_content()
+# 
+#   parsed <- box_parse_entries(entries)
+# 
+#   stacked <- boxr:::stack_rows_tbl(parsed)
+# 
+#   # not doing anything here, but box_version_history() changes some columns
+#   wrangled <- stacked
+# 
+#   wrangled
+# }
+# 
+# box_dir_info(dir_id)
 
 ## -----------------------------------------------------------------------------
 boxr:::string_side_effects()
